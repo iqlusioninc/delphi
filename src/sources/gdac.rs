@@ -31,6 +31,7 @@ pub struct GdacSource {
 
 impl GdacSource {
     /// Create a new GDAC source provider
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             http_client: Client::builder()
@@ -189,14 +190,12 @@ mod tests {
     #[test]
     #[ignore]
     fn trading_pairs_404() {
-        let quote_err = block_on(GdacSource::new().trading_pairs("N/A")).err().unwrap();
+        let quote_err = block_on(GdacSource::new().trading_pairs("N/A"))
+            .err()
+            .unwrap();
 
         use std::error::Error;
-        let err: &ErrorCode = quote_err
-            .source()
-            .unwrap()
-            .downcast_ref()
-            .unwrap();
+        let err: &ErrorCode = quote_err.source().unwrap().downcast_ref().unwrap();
 
         assert_eq!(err, &ErrorCode::InternalError);
     }
