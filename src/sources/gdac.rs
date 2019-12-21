@@ -1,6 +1,7 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
+use super::Pair;
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -11,7 +12,6 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use serde::{de, Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
@@ -41,12 +41,11 @@ impl GdacSource {
     }
 
     /// Get trading pairs
-    // TODO(tarcieri): traiding pair type (e.g. `Pair`)
-    pub async fn trading_pairs(&self, pair: &str) -> Result<Quote, Error> {
+    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
         let uri = format!(
             "{}/public/orderbook?pair={}",
             BASE_URI_V4,
-            utf8_percent_encode(pair, NON_ALPHANUMERIC)
+            pair.percent_encode()
         );
 
         let mut request = Request::builder()
@@ -131,6 +130,16 @@ pub enum ErrorCode {
     Other(String),
 }
 
+impl Display for ErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            ErrorCode::InternalError => "__internal_error__",
+            ErrorCode::Unavailable => "__unavailable__",
+            ErrorCode::Other(other) => other.as_ref(),
+        })
+    }
+}
+
 impl FromStr for ErrorCode {
     type Err = Error;
 
@@ -139,16 +148,6 @@ impl FromStr for ErrorCode {
             "__internal_error__" => ErrorCode::InternalError,
             "__unavailable__" => ErrorCode::Unavailable,
             other => ErrorCode::Other(other.to_owned()),
-        })
-    }
-}
-
-impl Display for ErrorCode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            ErrorCode::InternalError => "__internal_error__",
-            ErrorCode::Unavailable => "__unavailable__",
-            ErrorCode::Other(other) => other.as_ref(),
         })
     }
 }
@@ -181,7 +180,8 @@ mod tests {
     #[test]
     #[ignore]
     fn trading_pairs_ok() {
-        let quote = block_on(GdacSource::new().trading_pairs("LUNA/KRW")).unwrap();
+        let pair = "LUNA/KRW".parse().unwrap();
+        let quote = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
         assert!(quote.ask.len() > 10);
         assert!(quote.bid.len() > 10);
     }
@@ -190,7 +190,8 @@ mod tests {
     #[test]
     #[ignore]
     fn trading_pairs_404() {
-        let quote_err = block_on(GdacSource::new().trading_pairs("N/A"))
+        let pair = "N/A".parse().unwrap();
+        let quote_err = block_on(GdacSource::new().trading_pairs(&pair))
             .err()
             .unwrap();
 

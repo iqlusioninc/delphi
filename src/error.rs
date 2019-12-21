@@ -15,6 +15,10 @@ pub enum ErrorKind {
     #[error("config error")]
     Config,
 
+    /// Currency-related error
+    #[error("currency error")]
+    Currency,
+
     /// HTTP errors
     #[error("HTTP error")]
     Http,

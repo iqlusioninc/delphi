@@ -3,14 +3,17 @@
 //!
 //! Only KRW pairs are supported.
 
-use crate::error::Error;
+use super::{Currency, Pair};
+use crate::{
+    error::{Error, ErrorKind},
+    prelude::*,
+};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use serde::{Deserialize, Serialize};
 
 /// Base URI for requests to the Coinone API
@@ -36,13 +39,12 @@ impl CoinoneSource {
     }
 
     /// Get trading pairs
-    // TODO(tarcieri): traiding pair type (e.g. `Pair`)
-    pub async fn trading_pairs(&self, pair: &str) -> Result<Response, Error> {
-        let uri = format!(
-            "{}/orderbook?currency={}",
-            BASE_URI,
-            utf8_percent_encode(pair, NON_ALPHANUMERIC)
-        );
+    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+        if pair.1 != Currency::Krw {
+            fail!(ErrorKind::Currency, "trading pair must be with KRW");
+        }
+
+        let uri = format!("{}/orderbook?currency={}", BASE_URI, pair.0);
 
         let mut request = Request::builder()
             .method("GET")
@@ -117,7 +119,8 @@ mod tests {
     #[test]
     #[ignore]
     fn trading_pairs_ok() {
-        let response = block_on(CoinoneSource::new().trading_pairs("luna")).unwrap();
+        let pair = "LUNA/KRW".parse().unwrap();
+        let response = block_on(CoinoneSource::new().trading_pairs(&pair)).unwrap();
         assert!(response.ask.len() > 10);
         assert!(response.bid.len() > 10);
     }
@@ -126,7 +129,10 @@ mod tests {
     #[test]
     #[ignore]
     fn trading_pairs_404() {
-        let _err = block_on(CoinoneSource::new().trading_pairs("N/A"))
+        let pair = "N/A".parse().unwrap();
+
+        // TODO(tarcieri): test 404 handling
+        let _err = block_on(CoinoneSource::new().trading_pairs(&pair))
             .err()
             .unwrap();
     }
