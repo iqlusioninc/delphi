@@ -1,7 +1,7 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::Pair;
+use super::{Pair, Price};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -101,7 +101,7 @@ pub struct Quote {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PricePoint {
     /// Price
-    pub price: String,
+    pub price: Price,
 
     /// Volume
     pub volume: String,
@@ -182,6 +182,7 @@ mod tests {
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
         let quote = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
+        dbg!(&quote);
         assert!(quote.ask.len() > 10);
         assert!(quote.bid.len() > 10);
     }

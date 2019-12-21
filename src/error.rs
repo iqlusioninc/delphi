@@ -102,3 +102,9 @@ impl From<serde_json::Error> for Error {
         ErrorKind::Parse.context(err).into()
     }
 }
+
+impl From<rust_decimal::Error> for Error {
+    fn from(err: rust_decimal::Error) -> Self {
+        ErrorKind::Parse.context(err).into()
+    }
+}
