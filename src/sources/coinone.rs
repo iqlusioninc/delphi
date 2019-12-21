@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair};
+use super::{Currency, Pair, Price};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -95,7 +95,7 @@ pub struct Response {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PricePoint {
     /// Price
-    pub price: String,
+    pub price: Price,
 
     /// Quantity
     pub qty: String,
