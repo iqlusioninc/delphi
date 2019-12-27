@@ -25,6 +25,7 @@ pub struct GopaxSource {
 
 impl GopaxSource {
     /// Create a new GOPAX source provider
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             http_client: Client::builder()
@@ -35,11 +36,7 @@ impl GopaxSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
-        let uri = format!(
-            "{}/trading-pairs/{}-{}/book",
-            BASE_URI_V4,
-            pair.0,pair.1
-        );
+        let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI_V4, pair.0, pair.1);
         dbg!(&uri);
 
         let mut request = Request::builder()
@@ -106,21 +103,20 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let quote = block_on(GopaxSource::new().trading_pairs(&pair))
-            .unwrap();
+        let quote = block_on(GopaxSource::new().trading_pairs(&pair)).unwrap();
         dbg!(&quote);
         assert!(quote.ask.len() > 10);
         assert!(quote.bid.len() > 10);
     }
 
-//    //// `trading_pairs() with invalid currency pair
-//    // #[test]
-//    #[ignore]
-//    fn trading_pairs_404() {
-//        let pair = "N/A".parse().unwrap();
-//        let quote = block_on(GopaxSource::new().trading_pairs(&pair))
-//            .unwrap();
-//
-//        dbg!(&quote);
-//    }
+    //    //// `trading_pairs() with invalid currency pair
+    //    // #[test]
+    //    #[ignore]
+    //    fn trading_pairs_404() {
+    //        let pair = "N/A".parse().unwrap();
+    //        let quote = block_on(GopaxSource::new().trading_pairs(&pair))
+    //            .unwrap();
+    //
+    //        dbg!(&quote);
+    //    }
 }
