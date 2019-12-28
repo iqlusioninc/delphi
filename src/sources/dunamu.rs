@@ -12,11 +12,7 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use serde::{de, Deserialize, Serialize};
-use std::{
-    fmt::{self, Display},
-    str::FromStr,
-};
+use serde::{Deserialize, Serialize};
 
 //https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD
 
@@ -75,8 +71,9 @@ impl DunamuSource {
     }
 }
 
+/// API responses Vector
 pub type Response = Vec<ResponseElement>;
-
+/// API response entity
 #[derive(Serialize, Deserialize)]
 pub struct ResponseElement {
     code: String,
