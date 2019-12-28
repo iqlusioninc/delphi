@@ -118,7 +118,7 @@ impl Serialize for Pair {
 }
 
 /// Prices of currencies (internally represented as a `Decimal`)
-#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord, Deserialize)]
 pub struct Price(Decimal);
 
 impl Price {
@@ -155,12 +155,6 @@ impl FromStr for Price {
 
     fn from_str(s: &str) -> Result<Self, Error> {
         Self::new(s.parse()?)
-    }
-}
-
-impl<'de> Deserialize<'de> for Price {
-    fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        Self::new(<Decimal as Deserialize>::deserialize(deserializer)?).map_err(D::Error::custom)
     }
 }
 
