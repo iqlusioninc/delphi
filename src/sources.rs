@@ -1,8 +1,8 @@
 //! Data sources
 
 pub mod coinone;
-pub mod gdac;
 pub mod dunamu;
+pub mod gdac;
 
 use crate::{
     error::{Error, ErrorKind},
@@ -28,7 +28,7 @@ pub enum Currency {
     /// Terra Luna
     Luna,
 
-    //United States Dollar
+    /// United States Dollar
     Usd,
 
     /// Other (open-ended)
@@ -160,9 +160,8 @@ impl FromStr for Price {
 
 impl<'de> Deserialize<'de> for Price {
     fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        String::deserialize(deserializer)?
-            .parse()
-            .map_err(D::Error::custom)
+        let dec: Decimal = <Decimal as Deserialize>::deserialize(deserializer)?;
+        Self::new(dec).map_err(D::Error::custom)
     }
 }
 

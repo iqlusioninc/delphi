@@ -26,15 +26,12 @@ pub const BASE_URI: &str = "https://quotation-api-cdn.dunamu.com";
 /// User-Agent to send in HTTP request
 pub const USER_AGENT: &str = "iqlusion delphi";
 
-
-
 /// Source provider for Coinone
 pub struct DunamuSource {
     http_client: Client<HttpsConnector<HttpConnector>>,
 }
 
-impl DunamuSource{
-
+impl DunamuSource {
     /// Create a new Dunamu source provider
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
@@ -45,14 +42,16 @@ impl DunamuSource{
         }
     }
 
-            /// Get trading pairs
+    /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
-        if pair.0 != Currency::Krw && pair.1 != Currency::Krw{
+        if pair.0 != Currency::Krw && pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
 
-        let uri = format!("{}/v1/forex/recent?codes=FRX.{}{}", BASE_URI, pair.0,pair.1);
-        dbg!(uri.clone());
+        let uri = format!(
+            "{}/v1/forex/recent?codes=FRX.{}{}",
+            BASE_URI, pair.0, pair.1
+        );
 
         let mut request = Request::builder()
             .method("GET")
@@ -76,9 +75,6 @@ impl DunamuSource{
     }
 }
 
-
-
-
 pub type Response = Vec<ResponseElement>;
 
 #[derive(Serialize, Deserialize)]
@@ -95,38 +91,38 @@ pub struct ResponseElement {
     #[serde(rename = "recurrenceCount")]
     recurrence_count: i64,
     #[serde(rename = "basePrice")]
-    base_price: f64,
+    base_price: Price,
     #[serde(rename = "openingPrice")]
-    opening_price: f64,
+    opening_price: Price,
     #[serde(rename = "highPrice")]
-    high_price: f64,
+    high_price: Price,
     #[serde(rename = "lowPrice")]
-    low_price: f64,
+    low_price: Price,
     change: String,
     #[serde(rename = "changePrice")]
-    change_price: f64,
+    change_price: Price,
     #[serde(rename = "cashBuyingPrice")]
-    cash_buying_price: f64,
+    cash_buying_price: Price,
     #[serde(rename = "cashSellingPrice")]
-    cash_selling_price: f64,
+    cash_selling_price: Price,
     #[serde(rename = "ttBuyingPrice")]
-    tt_buying_price: f64,
+    tt_buying_price: Price,
     #[serde(rename = "ttSellingPrice")]
-    tt_selling_price: f64,
+    tt_selling_price: Price,
     #[serde(rename = "tcBuyingPrice")]
     tc_buying_price: Option<serde_json::Value>,
     #[serde(rename = "fcSellingPrice")]
     fc_selling_price: Option<serde_json::Value>,
     #[serde(rename = "exchangeCommission")]
-    exchange_commission: f64,
+    exchange_commission: Price,
     #[serde(rename = "usDollarRate")]
-    us_dollar_rate: f64,
+    us_dollar_rate: Price,
     #[serde(rename = "high52wPrice")]
-    high52_w_price: f64,
+    high52_w_price: Price,
     #[serde(rename = "high52wDate")]
     high52_w_date: String,
     #[serde(rename = "low52wPrice")]
-    low52_w_price: f64,
+    low52_w_price: Price,
     #[serde(rename = "low52wDate")]
     low52_w_date: String,
     #[serde(rename = "currencyUnit")]
@@ -139,11 +135,11 @@ pub struct ResponseElement {
     #[serde(rename = "modifiedAt")]
     modified_at: String,
     #[serde(rename = "changeRate")]
-    change_rate: f64,
+    change_rate: Price,
     #[serde(rename = "signedChangePrice")]
-    signed_change_price: f64,
+    signed_change_price: Price,
     #[serde(rename = "signedChangeRate")]
-    signed_change_rate: f64,
+    signed_change_rate: Price,
 }
 
 #[cfg(test)]
@@ -166,7 +162,7 @@ mod tests {
     fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
         let response = block_on(DunamuSource::new().trading_pairs(&pair)).unwrap();
-        
+
         assert!(response.len() > 0);
     }
 
