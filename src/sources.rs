@@ -2,6 +2,7 @@
 
 pub mod coinone;
 pub mod gdac;
+pub mod dunamu;
 
 use crate::{
     error::{Error, ErrorKind},
@@ -27,6 +28,9 @@ pub enum Currency {
     /// Terra Luna
     Luna,
 
+    //United States Dollar
+    Usd,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -36,6 +40,7 @@ impl Display for Currency {
         f.write_str(match self {
             Currency::Krw => "KRW",
             Currency::Luna => "LUNA",
+            Currency::Usd => "USD",
             Currency::Other(other) => other.as_ref(),
         })
     }
@@ -48,6 +53,7 @@ impl FromStr for Currency {
         Ok(match s.to_ascii_uppercase().as_ref() {
             "KRW" => Currency::Krw,
             "LUNA" => Currency::Luna,
+            "USD" => Currency::Usd,
             other => Currency::Other(other.to_owned()),
         })
     }
