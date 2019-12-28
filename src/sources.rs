@@ -160,8 +160,7 @@ impl FromStr for Price {
 
 impl<'de> Deserialize<'de> for Price {
     fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let dec: Decimal = <Decimal as Deserialize>::deserialize(deserializer)?;
-        Self::new(dec).map_err(D::Error::custom)
+        Self::new(<Decimal as Deserialize>::deserialize(deserializer)?).map_err(D::Error::custom)
     }
 }
 
