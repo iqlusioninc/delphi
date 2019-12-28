@@ -22,7 +22,7 @@ pub const BASE_URI: &str = "https://quotation-api-cdn.dunamu.com";
 /// User-Agent to send in HTTP request
 pub const USER_AGENT: &str = "iqlusion delphi";
 
-/// Source provider for Coinone
+/// Source provider for Dunamu
 pub struct DunamuSource {
     http_client: Client<HttpsConnector<HttpConnector>>,
 }
