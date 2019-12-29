@@ -1,3 +1,6 @@
+//! IMF SDR Source Provider 
+//! <https://www.imf.org/>
+
 use super::{Currency, Pair, Price};
 use crate::{
     error::{Error, ErrorKind},
@@ -147,7 +150,7 @@ impl ImfSDRSource {
         }
     }
 }
-
+/// Provides a single price point for a currency pair based extracted data
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response {
     price: Price,
@@ -185,18 +188,18 @@ mod tests {
         dbg!(&quote);
     }
 
-    /// `trading_pairs()` with invalid currency pair
-    #[test]
-    #[ignore]
-    fn trading_pairs_404() {
-        let pair = "N/A".parse().unwrap();
-        let quote_err = block_on(ImfSDRSource::new().trading_pairs(&pair))
-            .err()
-            .unwrap();
+    // `trading_pairs()` with invalid currency pair
+    // #[test]
+    // #[ignore]
+    // fn trading_pairs_404() {
+    //     let pair = "N/A".parse().unwrap();
+    //     let quote_err = block_on(ImfSDRSource::new().trading_pairs(&pair))
+    //         .err()
+    //         .unwrap();
 
-        // use std::error::Error;
-        // let err: &ErrorCode = quote_err.source().unwrap().downcast_ref().unwrap();
+    //    use std::error::Error;
+    //    let err: &ErrorCode = quote_err.source().unwrap().downcast_ref().unwrap();
 
-        // assert_eq!(err, &ErrorCode::InternalError);
-    }
+    //     assert_eq!(err, &ErrorCode::InternalError);
+    // }
 }
