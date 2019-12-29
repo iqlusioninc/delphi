@@ -71,6 +71,7 @@ impl FromStr for Currency {
             "KRW" => Currency::Krw,
             "LUNA" => Currency::Luna,
             "USD" => Currency::Usd,
+            "SDR" => Currency::SDR,
             other => Currency::Other(other.to_owned()),
         })
     }
