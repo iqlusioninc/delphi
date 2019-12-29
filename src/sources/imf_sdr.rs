@@ -76,7 +76,7 @@ impl IMFSDRRow {
             });
         }
 
-        return None;
+        None
     }
 }
 
