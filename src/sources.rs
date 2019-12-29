@@ -3,6 +3,7 @@
 pub mod coinone;
 pub mod dunamu;
 pub mod gdac;
+pub mod imf_sdr;
 
 use crate::{
     error::{Error, ErrorKind},
@@ -31,8 +32,23 @@ pub enum Currency {
     /// United States Dollar
     Usd,
 
+    /// IMF Special Drawing Rights
+    SDR,
+
     /// Other (open-ended)
     Other(String),
+}
+
+impl Currency {
+    fn imf_long_name(&self) -> String {
+        match self {
+            Currency::Krw => "Korean won".to_string(),
+            Currency::Usd => "U.S. dollar".to_string(),
+            Currency::Luna => "N/A".to_string(),
+            Currency::SDR => "SDR".to_string(),
+            Currency::Other(other) => other.to_string(),
+        }
+    }
 }
 
 impl Display for Currency {
@@ -41,6 +57,7 @@ impl Display for Currency {
             Currency::Krw => "KRW",
             Currency::Luna => "LUNA",
             Currency::Usd => "USD",
+            Currency::SDR => "SDR",
             Currency::Other(other) => other.as_ref(),
         })
     }
