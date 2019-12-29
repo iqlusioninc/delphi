@@ -1,4 +1,4 @@
-//! IMF SDR Source Provider 
+//! IMF SDR Source Provider
 //! <https://www.imf.org/>
 
 use super::{Currency, Pair, Price};
