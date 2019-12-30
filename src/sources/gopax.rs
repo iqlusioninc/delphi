@@ -14,9 +14,7 @@ use hyper::{
 };
 use hyper_rustls::HttpsConnector;
 use serde::{de, Deserialize, Serialize};
-use std::{
-    str::FromStr,
-};
+use std::str::FromStr;
 use thiserror::Error;
 
 /// Base URI for requests to the GOPAX API
