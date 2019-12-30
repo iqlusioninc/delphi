@@ -7,7 +7,6 @@ use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
-use abscissa_core::error::message::Message;
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -16,7 +15,6 @@ use hyper::{
 use hyper_rustls::HttpsConnector;
 use serde::{de, Deserialize, Serialize};
 use std::{
-    fmt::{self, Display},
     str::FromStr,
 };
 use thiserror::Error;
@@ -109,22 +107,11 @@ pub struct PricePoint(String, f64, f64);
 pub enum ErrorCode {
     /// Returns 200 but semantic logical error
     #[error("SemanticError encountered")]
-    SemanticError(Message),
+    SemanticError(String),
 
     #[error("HTTPError encountered")]
     /// HTTP status codes
     HttpError(u16),
-}
-
-impl std::error::Error for ErrorCode {}
-
-impl Display for ErrorCode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            ErrorCode::SemanticError(s) => s.as_ref(),
-            ErrorCode::HttpError(u) => u,
-        })
-    }
 }
 
 impl FromStr for ErrorCode {
