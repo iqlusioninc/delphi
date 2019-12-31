@@ -13,17 +13,15 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use serde::{de, Deserialize, Serialize};
-use std::str::FromStr;
-use thiserror::Error;
+use serde::{Deserialize, Serialize};
 
 /// Base URI for requests to the GOPAX API
-pub const BASE_URI_V4: &str = "https://api.gopax.co.kr";
+pub const BASE_URI: &str = "https://api.gopax.co.kr";
 
 /// User-Agent to send in HTTP request
 pub const USER_AGENT: &str = "iqlusion delphi";
 
-/// Source provider for GDAC
+/// Source provider for GOPAX
 pub struct GopaxSource {
     http_client: Client<HttpsConnector<HttpConnector>>,
 }
@@ -41,7 +39,7 @@ impl GopaxSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
-        let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI_V4, pair.0, pair.1);
+        let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI, pair.0, pair.1);
         dbg!(&uri);
 
         let mut request = Request::builder()
@@ -65,21 +63,13 @@ impl GopaxSource {
         let body = hyper::body::aggregate(response.into_body()).await?;
 
         if !status.is_success() {
-            let error_response: ErrorResponse =
-                serde_json::from_reader(body.reader()).map_err(|e| {
-                    format_err!(
-                        ErrorKind::Source,
-                        "got {:?} error status with malformed body: {}",
-                        status,
-                        e
-                    )
-                })?;
-
-            let err = ErrorKind::Source.context(error_response.code);
-            return Err(err.into());
+            fail!(ErrorKind::Source, "got {:?} error status", status)
         }
 
-        Ok(serde_json::from_reader(body.reader())?)
+        match serde_json::from_reader(body.reader())? {
+            Response::Success(quote) => Ok(quote),
+            Response::Error { errormsg } => fail!(ErrorKind::Source, errormsg),
+        }
     }
 }
 
@@ -100,44 +90,12 @@ pub struct Quote {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PricePoint(String, f64, f64);
 
-/// Error response codes
-#[derive(Clone, Debug, Error, Eq, PartialEq)]
-pub enum ErrorCode {
-    /// Returns 200 but semantic logical error
-    #[error("SemanticError encountered")]
-    SemanticError(String),
-
-    #[error("HTTPError encountered")]
-    /// HTTP status codes
-    HttpError(u16),
-}
-
-impl FromStr for ErrorCode {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Error> {
-        Ok(match s {
-            other => ErrorCode::SemanticError(other.to_owned()),
-        })
-    }
-}
-
-impl<'de> Deserialize<'de> for ErrorCode {
-    fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        use de::Error;
-        let s = String::deserialize(deserializer)?;
-        s.parse().map_err(D::Error::custom)
-    }
-}
-
 /// Error responses
 #[derive(Clone, Debug, Deserialize)]
-pub struct ErrorResponse {
-    /// Response code
-    pub code: ErrorCode,
-
-    /// Response data
-    pub data: serde_json::Value,
+#[serde(untagged)]
+enum Response {
+    Success(Quote),
+    Error { errormsg: String },
 }
 
 #[cfg(test)]
@@ -160,17 +118,16 @@ mod tests {
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
         let quote = block_on(GopaxSource::new().trading_pairs(&pair)).unwrap();
-        dbg!(&quote);
         assert!(quote.ask.len() > 10);
         assert!(quote.bid.len() > 10);
     }
 
-    /// `trading_pairs() with invalid currency pair
+    /// `trading_pairs()` with invalid currency pair
     #[test]
     #[ignore]
     fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
-        let quote = block_on(GopaxSource::new().trading_pairs(&pair)).unwrap();
-        dbg!(&quote);
+        let quote = block_on(GopaxSource::new().trading_pairs(&pair));
+        assert!(quote.is_err());
     }
 }
