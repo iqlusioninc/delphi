@@ -2,6 +2,7 @@
 
 pub mod coinone;
 pub mod gdac;
+pub mod gopax;
 
 use crate::{
     error::{Error, ErrorKind},
