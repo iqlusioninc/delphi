@@ -4,6 +4,7 @@ pub mod coinone;
 pub mod dunamu;
 pub mod gdac;
 pub mod imf_sdr;
+pub mod gopax;
 
 use crate::{
     error::{Error, ErrorKind},
