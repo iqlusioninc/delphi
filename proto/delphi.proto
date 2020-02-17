@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service PriceOracle {
+    // Our GetPrice rpc accepts PriceRequests and returns PriceResponse
+    rpc GetPrice (PriceRequest) returns (PriceResponse);
+}
+
+message PriceRequest {
+    string currency_pair = 1;
+ }
+
+ message PriceResponse {
+    string currency_pair = 1;
+    float price = 2;
+ }
