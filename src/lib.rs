@@ -13,6 +13,6 @@ pub mod application;
 pub mod commands;
 pub mod config;
 pub mod error;
+pub mod grpc;
 pub mod prelude;
 pub mod sources;
-pub mod grpc;
