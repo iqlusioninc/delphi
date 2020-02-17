@@ -1,4 +1,5 @@
 syntax = "proto3";
+package delphi;
 
 service PriceOracle {
     // Our GetPrice rpc accepts PriceRequests and returns PriceResponse
