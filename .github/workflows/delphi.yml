@@ -1,11 +1,13 @@
-# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
+name: Delphi
 
 on:
   pull_request: {}
   push:
     branches: develop
 
-name: Rust
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
 
 jobs:
   check:
@@ -33,7 +35,7 @@ jobs:
         platform:
           - ubuntu-latest
         toolchain:
-          - 1.39.0
+          - 1.41.0 # MSRV
           - stable
     runs-on: ${{ matrix.platform }}
     steps:
@@ -66,14 +68,22 @@ jobs:
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
-        env:
-          RUSTFLAGS: -D warnings
         with:
           command: test
           args: --all --release
 
-  fmt:
-    name: Rustfmt
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.41.0 # MSRV
+          components: clippy
+      - run: cargo clippy --all --all-features -- -D warnings
+
+  rustfmt:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -82,54 +92,12 @@ jobs:
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
-          override: true
-
-      - name: Install rustfmt
-        run: rustup component add rustfmt
+          components: rustfmt
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
-
-      - name: Cache cargo registry
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('Cargo.lock') }}
-
-      - name: Cache cargo build
-        uses: actions/cache@v1
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-clippy-${{ hashFiles('Cargo.lock') }}
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Install clippy
-        run: rustup component add clippy
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all -- -D warnings

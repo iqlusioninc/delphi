@@ -7,39 +7,6 @@
 use serde::{Deserialize, Serialize};
 
 /// Delphi Configuration
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct DelphiConfig {
-    /// An example configuration section
-    pub hello: ExampleSection,
-}
-
-/// Default configuration settings.
-///
-/// Note: if your needs are as simple as below, you can
-/// use `#[derive(Default)]` on DelphiConfig instead.
-impl Default for DelphiConfig {
-    fn default() -> Self {
-        Self {
-            hello: ExampleSection::default(),
-        }
-    }
-}
-
-/// Example configuration section.
-///
-/// Delete this and replace it with your actual configuration structs.
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct ExampleSection {
-    /// Example configuration value
-    pub recipient: String,
-}
-
-impl Default for ExampleSection {
-    fn default() -> Self {
-        Self {
-            recipient: "world".to_owned(),
-        }
-    }
-}
+pub struct DelphiConfig {}
