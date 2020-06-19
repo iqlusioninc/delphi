@@ -43,8 +43,8 @@ impl MsgExchangeRateVote {
                 .decimal("exchange_rate", self.exchange_rate)?
                 .string("salt", &self.salt)?
                 .string("denom", self.denom.as_str())?
-                .acc_address("feeder", self.feeder.clone())?
-                .val_address("validator", self.validator.clone())?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
                 .to_msg(),
         )
     }
@@ -54,8 +54,8 @@ impl MsgExchangeRateVote {
         MsgExchangeRatePrevote {
             hash: self.generate_vote_hash(),
             denom: self.denom,
-            feeder: self.feeder.clone(),
-            validator: self.validator.clone(),
+            feeder: self.feeder,
+            validator: self.validator,
         }
     }
 
@@ -69,13 +69,9 @@ impl MsgExchangeRateVote {
             self.validator.to_bech32("terravaloper"),
         );
 
-        // Tendermint truncated sha256
+        // Tendermint truncated SHA-256
         let digest = Sha256::digest(data.as_bytes());
-        let mut bytes = [0u8; 20];
-        bytes.copy_from_slice(&digest[..20]);
-
-        // Should always succeed.
-        String::from_utf8(hex::encode(bytes)).unwrap()
+        String::from_utf8(hex::encode(&digest[..20])).unwrap()
     }
 }
 
@@ -104,8 +100,8 @@ impl MsgExchangeRatePrevote {
             stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgExchangeRatePrevote")?
                 .string("hash", &self.hash)?
                 .string("denom", self.denom.as_str())?
-                .acc_address("feeder", self.feeder.clone())?
-                .val_address("validator", self.validator.clone())?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
                 .to_msg(),
         )
     }

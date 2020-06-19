@@ -55,21 +55,22 @@ impl ExchangeRateOracle {
             Ok(msgs) => {
                 let started_at = Instant::now();
 
-                let msg_json = msgs
+                // TODO(tarcieri): switch to `AggregatePriceVote` when available
+                let txes = msgs
                     .iter()
-                    .map(|msg| msg.to_json_value(&SCHEMA))
+                    .map(|msg| {
+                        json!({
+                            "chain_id": CHAIN_ID,
+                            "fee": stdtx::StdFee::for_gas(GAS_AMOUNT),
+                            "memo": MEMO,
+                            "msgs": vec![msg.to_json_value(&SCHEMA)],
+                        })
+                    })
                     .collect::<Vec<_>>();
-
-                let tx = json!({
-                    "chain_id": CHAIN_ID,
-                    "fee": stdtx::StdFee::for_gas(GAS_AMOUNT).to_json_value(),
-                    "memo": MEMO,
-                    "msgs": msg_json,
-                });
 
                 let response = json!({
                     "status": "ok",
-                    "tx": vec![tx]
+                    "tx": txes
                 });
 
                 info!("t={:?}", Instant::now().duration_since(started_at));
@@ -112,9 +113,9 @@ impl OracleState {
     /// Initialize oracle state
     fn new(feeder: stdtx::Address, validator: stdtx::Address) -> Self {
         Self {
-            unrevealed_votes: vec![],
             feeder,
             validator,
+            unrevealed_votes: vec![],
         }
     }
 
@@ -141,8 +142,8 @@ impl OracleState {
             denom,
             exchange_rate: Decimal::from(-1i8),
             salt: MsgExchangeRateVote::random_salt(),
-            feeder: self.feeder.clone(),
-            validator: self.validator.clone(),
+            feeder: self.feeder,
+            validator: self.validator,
         })
     }
 }
