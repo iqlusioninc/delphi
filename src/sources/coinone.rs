@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair, Price};
+use super::{Currency, Pair, Price, ComputablePrice};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -15,6 +15,13 @@ use hyper::{
 };
 use hyper_rustls::HttpsConnector;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+use rust_decimal::{prelude::*, Decimal};
+
+
+
+use async_trait::async_trait;
+
 
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://api.coinone.co.kr/";
@@ -68,6 +75,19 @@ impl CoinoneSource {
     }
 }
 
+#[async_trait]
+impl ComputablePrice for CoinoneSource{
+
+    async fn run_price(&self, pair:Pair)-> Result<Price,Error>{
+        let resp = self.trading_pairs(&pair).await?;
+        //Average the weighted averages between bid and ask
+        Price::new((resp.ask_weighted_average()?.0 + resp.bid_weighted_average()?.0)/Decimal::new(2, 0))
+
+    }
+
+}
+
+
 /// API responses
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response {
@@ -91,6 +111,33 @@ pub struct Response {
     pub bid: Vec<PricePoint>,
 }
 
+impl Response {
+    fn ask_weighted_average(&self)->Result<Price, Error> {
+
+        let mut price_sum_product = Decimal::zero();
+        let mut total = Decimal::zero();
+        for ask_pp in &self.ask {
+            let quantity = Decimal::from_str(&ask_pp.qty.clone())?;
+            price_sum_product += ask_pp.price.0 * quantity;
+            total += quantity;
+        }
+        Price::new(price_sum_product / total)
+
+    }
+
+    fn bid_weighted_average(&self)->Result<Price, Error>{
+
+        let mut price_sum_product = Decimal::zero();
+        let mut total = Decimal::zero();
+        for bid_pp in &self.bid {
+            let quantity = Decimal::from_str(&bid_pp.qty)?;
+            price_sum_product += bid_pp.price.0 * quantity;
+            total += quantity;
+        }
+        Price::new(price_sum_product / total)
+    }
+}
+
 /// Prices and associated volumes
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PricePoint {
@@ -100,6 +147,9 @@ pub struct PricePoint {
     /// Quantity
     pub qty: String,
 }
+
+
+
 
 #[cfg(test)]
 mod tests {

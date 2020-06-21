@@ -114,3 +114,10 @@ impl From<stdtx::Error> for Error {
         Context::new(ErrorKind::Parse, Some(err.into())).into()
     }
 }
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(err: std::num::ParseFloatError) -> Self {
+        Context::new(ErrorKind::Parse, Some(err.into())).into()
+
+    }
+}

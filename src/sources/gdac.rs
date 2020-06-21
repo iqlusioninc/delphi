@@ -183,8 +183,8 @@ mod tests {
         let pair = "LUNA/KRW".parse().unwrap();
         let quote = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
         dbg!(&quote);
-        assert!(quote.ask.len() > 10);
-        assert!(quote.bid.len() > 10);
+        assert!(quote.ask.len() > 3);
+        assert!(quote.bid.len() > 3);
     }
 
     /// `trading_pairs()` with invalid currency pair

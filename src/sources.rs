@@ -18,6 +18,8 @@ use std::{
     fmt::{self, Display},
     str::FromStr,
 };
+use async_trait::async_trait;
+
 
 /// Currencies for use in trading pairs
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -165,4 +167,9 @@ impl Serialize for Price {
     fn serialize<S: ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.to_string().serialize(serializer)
     }
+}
+
+#[async_trait]
+trait ComputablePrice {
+    async fn run_price(&self,pair:Pair )-> Result<Price,Error>;
 }

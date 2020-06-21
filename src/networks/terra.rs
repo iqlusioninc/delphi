@@ -3,7 +3,7 @@
 
 pub mod msg;
 
-use crate::{error::Error, prelude::*};
+use crate::{error::Error, prelude::*, sources::{Price}};
 use msg::MsgExchangeRateVote;
 use once_cell::sync::Lazy;
 use serde_json::json;
@@ -136,7 +136,9 @@ impl OracleState {
 
     /// Create a vote message for a particular denom
     fn get_vote_for_denom(&mut self, denom: Denom) -> Result<MsgExchangeRateVote, Error> {
-        // TODO(tarcieri): compute non-abstain votes for each denom
+
+
+
         Ok(MsgExchangeRateVote {
             denom,
             exchange_rate: Decimal::from(-1i8),
@@ -177,5 +179,18 @@ impl Denom {
             Denom::USDR => "usdr",
             Denom::UUSD => "uusd",
         }
+    }
+
+    pub async fn price(&self) -> Result<Price,Error>{
+
+        match self{
+            Denom::UKRW =>{todo!("")} ,
+            Denom::UMNT =>{todo!("")} ,
+            Denom::USDR =>{todo!("")} ,
+            Denom::UUSD =>{todo!("")} ,
+
+        }
+
+
     }
 }
