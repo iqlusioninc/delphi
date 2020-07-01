@@ -170,6 +170,6 @@ impl Serialize for Price {
 }
 
 #[async_trait]
-trait ComputablePrice {
+pub(crate) trait ComputablePrice {
     async fn run_price(&self,pair:Pair )-> Result<Price,Error>;
 }
