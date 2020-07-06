@@ -62,7 +62,7 @@ impl ExchangeRateOracle {
 
                 let tx = json!({
                     "chain_id": CHAIN_ID,
-                    "fee": stdtx::StdFee::for_gas(GAS_AMOUNT).to_json_value(),
+                    "fee": stdtx::StdFee::for_gas(GAS_AMOUNT),
                     "memo": MEMO,
                     "msgs": msg_json,
                 });

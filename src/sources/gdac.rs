@@ -35,7 +35,6 @@ impl GdacSource {
     pub fn new() -> Self {
         Self {
             http_client: Client::builder()
-                .keep_alive(true)
                 .build(HttpsConnector::new()),
         }
     }
