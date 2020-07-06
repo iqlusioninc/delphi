@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "abscissa_core"
-version = "0.5.0"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "abscissa_derive 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -13,7 +13,7 @@ dependencies = [
  "generational-arena 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "gumdrop 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.66 (registry+https://github.com/rust-lang/crates.io-index)",
- "once_cell 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "once_cell 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "secrecy 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -45,7 +45,7 @@ name = "abscissa_tokio"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "abscissa_core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "abscissa_core 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -301,14 +301,14 @@ dependencies = [
 name = "delphi"
 version = "0.0.0"
 dependencies = [
- "abscissa_core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "abscissa_core 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "abscissa_tokio 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gumdrop 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "http 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper-rustls 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "once_cell 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "once_cell 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "percent-encoding 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust_decimal 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -916,7 +916,7 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.2.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -2108,7 +2108,7 @@ version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
-"checksum abscissa_core 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e09ff64ef3cdaf970afcfcac324b1975b18cd829e34a57485647d6f61b1734dd"
+"checksum abscissa_core 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6a07677093120a02583717b6dd1ef81d8de1e8d01bd226c83f0f9bdf3e56bb3a"
 "checksum abscissa_derive 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "74f5722bc48763cb9d81d8427ca05b6aa2842f6632cf8e4c0a29eef9baececcc"
 "checksum abscissa_tokio 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "50b7d1a5aa670b07be20e9457b491e78022d8421d4a39939f8b01a6a16ea85dc"
 "checksum aho-corasick 0.7.6 (registry+https://github.com/rust-lang/crates.io-index)" = "58fb5e95d83b38284460a5fda7d6470aa0b8844d283a0b614b8535e880800d2d"
@@ -2211,7 +2211,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum nom 4.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2ad2a91a8e869eeb30b9cb3119ae87773a8f4ae617f41b1eb9c154b2905f7bd6"
 "checksum num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "b85e541ef8255f6cf42bbfe4ef361305c6c135d10919ecc26126c4e5ae94bc09"
 "checksum num-traits 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)" = "d4c81ffc11c212fa327657cb19dd85eb7419e163b5b076bede2bdb5c974c07e4"
-"checksum once_cell 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "891f486f630e5c5a4916c7e16c4b24a53e78c860b646e9f8e005e4f16847bfed"
+"checksum once_cell 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0b631f7e854af39a1739f401cf34a8a013dfe09eac4fa4dba91e9768bd28168d"
 "checksum opaque-debug 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
 "checksum openssl-probe 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "77af24da69f9d9341038eba93a073b1fdaaa1b788221b00a69bce9e762cb32de"
 "checksum owning_ref 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "49a4b8ea2179e6a2e27411d3bca09ca6dd630821cf6894c6c7c8467a8ee7ef13"
