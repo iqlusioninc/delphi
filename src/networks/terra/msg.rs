@@ -43,8 +43,8 @@ impl MsgExchangeRateVote {
                 .decimal("exchange_rate", self.exchange_rate)?
                 .string("salt", &self.salt)?
                 .string("denom", self.denom.as_str())?
-                .acc_address("feeder", self.feeder.clone())?
-                .val_address("validator", self.validator.clone())?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
                 .to_msg(),
         )
     }
@@ -54,8 +54,8 @@ impl MsgExchangeRateVote {
         MsgExchangeRatePrevote {
             hash: self.generate_vote_hash(),
             denom: self.denom,
-            feeder: self.feeder.clone(),
-            validator: self.validator.clone(),
+            feeder: self.feeder,
+            validator: self.validator,
         }
     }
 
@@ -104,8 +104,8 @@ impl MsgExchangeRatePrevote {
             stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgExchangeRatePrevote")?
                 .string("hash", &self.hash)?
                 .string("denom", self.denom.as_str())?
-                .acc_address("feeder", self.feeder.clone())?
-                .val_address("validator", self.validator.clone())?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
                 .to_msg(),
         )
     }
