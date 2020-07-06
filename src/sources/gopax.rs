@@ -31,9 +31,7 @@ impl GopaxSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder()
-                .keep_alive(true)
-                .build(HttpsConnector::new()),
+            http_client: Client::builder().build(HttpsConnector::new()),
         }
     }
 

@@ -20,7 +20,7 @@ use warp::http::StatusCode;
 pub const CHAIN_ID: &str = "columbus-3";
 
 /// Amount of gas to use when voting
-pub const GAS_AMOUNT: u64 = 200000;
+pub const GAS_AMOUNT: u64 = 200_000;
 
 /// Memo to include in transactions
 pub const MEMO: &str = concat!("delphi/", env!("CARGO_PKG_VERSION"));
@@ -62,7 +62,7 @@ impl ExchangeRateOracle {
 
                 let tx = json!({
                     "chain_id": CHAIN_ID,
-                    "fee": stdtx::StdFee::for_gas(GAS_AMOUNT).to_json_value(),
+                    "fee": stdtx::StdFee::for_gas(GAS_AMOUNT),
                     "memo": MEMO,
                     "msgs": msg_json,
                 });
@@ -141,8 +141,8 @@ impl OracleState {
             denom,
             exchange_rate: Decimal::from(-1i8),
             salt: MsgExchangeRateVote::random_salt(),
-            feeder: self.feeder.clone(),
-            validator: self.validator.clone(),
+            feeder: self.feeder,
+            validator: self.validator,
         })
     }
 }
