@@ -6,6 +6,7 @@ use crate::sources::gopax::GopaxSource;
 use crate::sources::{coinone, gdac, gopax};
 use crate::sources::{coinone::CoinoneSource, Currency, Pair, Price};
 use rust_decimal::Decimal;
+use std::convert::TryFrom;
 use std::fmt::{self, Display};
 use std::str::FromStr;
 
@@ -42,7 +43,7 @@ impl Denom {
     }
 
     /// Get the exchange rate for this [`Denom`]
-    pub async fn get_exchange_rate(self) -> Result<Decimal, Error> {
+    pub async fn get_exchange_rate(self) -> Result<stdtx::Decimal, Error> {
         match self {
             Denom::UKRW => {
                 // Source: CoinOne
@@ -50,9 +51,9 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&coinone_response);
-                let ask_weighted_avg = get_ask_weighted_average(&coinone_response);
+                let ask_weighted_avg = get_ask_weighted_average(&coinone_response)?;
                 dbg!(&ask_weighted_avg);
-                let bid_weighted_avg = get_bid_weighted_average(&coinone_response);
+                let bid_weighted_avg = get_bid_weighted_average(&coinone_response)?;
                 dbg!(&bid_weighted_avg);
 
                 // Source: GDAC
@@ -60,9 +61,9 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&gdac_response);
-                let gdac_ask_weighted_avg = gdac_get_ask_weighted_average(&gdac_response);
+                let gdac_ask_weighted_avg = gdac_get_ask_weighted_average(&gdac_response)?;
                 dbg!(&gdac_ask_weighted_avg);
-                let gdac_bid_weighted_avg = gdac_get_bid_weighted_average(&gdac_response);
+                let gdac_bid_weighted_avg = gdac_get_bid_weighted_average(&gdac_response)?;
                 dbg!(&gdac_bid_weighted_avg);
 
                 // Source: GOPAX
@@ -70,27 +71,47 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&gopax_response);
-                let gopax_ask_weighted_avg = gopax_get_ask_weighted_average(&gopax_response);
+                let gopax_ask_weighted_avg = gopax_get_ask_weighted_average(&gopax_response)?;
                 dbg!(&gopax_ask_weighted_avg);
-                let gopax_bid_weighted_avg = gopax_get_bid_weighted_average(&gopax_response);
+                let gopax_bid_weighted_avg = gopax_get_bid_weighted_average(&gopax_response)?;
                 dbg!(&gopax_bid_weighted_avg);
 
                 // Weighted avgs for all sources
                 let coinone_weighted_avg =
-                    Price::new((ask_weighted_avg?.0 + bid_weighted_avg?.0) / Decimal::new(2, 0));
+                    Price::new((ask_weighted_avg.0 + bid_weighted_avg.0) / Decimal::new(2, 0))?;
                 dbg!(&coinone_weighted_avg);
                 let gdac_weighted_avg = Price::new(
-                    (gdac_ask_weighted_avg?.0 + gdac_bid_weighted_avg?.0) / Decimal::new(2, 0),
-                );
+                    (gdac_ask_weighted_avg.0 + gdac_bid_weighted_avg.0) / Decimal::new(2, 0),
+                )?;
                 dbg!(&gdac_weighted_avg);
                 let gopax_weighted_avg = Price::new(
-                    (gopax_ask_weighted_avg?.0 + gopax_bid_weighted_avg?.0) / Decimal::new(2, 0),
-                );
+                    (gopax_ask_weighted_avg.0 + gopax_bid_weighted_avg.0) / Decimal::new(2, 0),
+                )?;
                 dbg!(&gopax_weighted_avg);
 
-                Ok(Decimal::from(-1i8))
+                let coinone_gdac_weighted_avg = Price::new(
+                    (coinone_weighted_avg.0 + gdac_weighted_avg.0) / Decimal::new(2, 0),
+                )?;
+                dbg!(&coinone_gdac_weighted_avg);
+
+                // TODO: debug gopax source, reporting weird prices
+                // let weighted_avg = Price::new(
+                //     (&coinone_weighted_avg.0 + &gdac_weighted_avg.0 + &gopax_weighted_avg.0)
+                //         / Decimal::new(3, 0),
+                // )?;
+                // dbg!(&weighted_avg);
+
+                let weighted_avg = coinone_gdac_weighted_avg.0;
+                dbg!(&weighted_avg, weighted_avg.scale());
+                let mut weighted_avg_scaled =
+                    weighted_avg * Decimal::new(1, weighted_avg.scale() - 16);
+                weighted_avg_scaled
+                    .set_scale(18)
+                    .expect("couldn't set scale");
+                dbg!(&weighted_avg_scaled, weighted_avg_scaled.scale());
+                Ok(stdtx::Decimal::try_from(weighted_avg_scaled)?)
             }
-            _ => Ok(Decimal::from(-1i8)),
+            _ => Ok(stdtx::Decimal::from(-1i8)),
         }
     }
 }
