@@ -114,7 +114,7 @@ impl Serialize for Pair {
 
 /// Prices of currencies (internally represented as a `Decimal`)
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
-pub struct Price(Decimal);
+pub struct Price(pub Decimal);
 
 impl Price {
     /// Create a new price from a `Decimal`
@@ -124,18 +124,6 @@ impl Price {
         }
 
         Ok(Price(decimal))
-    }
-
-    /// Convert price to `f32`
-    pub fn to_f32(&self) -> f32 {
-        // This is guaranteed to always be `Some` by `new`
-        self.0.to_f32().unwrap()
-    }
-
-    /// Convert prices to `f64`
-    pub fn to_f64(&self) -> f64 {
-        // This is guaranteed to always be `Some` by `new`
-        self.0.to_f64().unwrap()
     }
 }
 

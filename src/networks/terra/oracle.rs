@@ -3,7 +3,11 @@
 use super::{denom::Denom, msg::MsgExchangeRateVote, CHAIN_ID, GAS_AMOUNT, MEMO, SCHEMA};
 use crate::prelude::*;
 use serde_json::json;
-use std::{convert::Infallible, sync::Arc, time::Instant};
+use std::{
+    convert::{Infallible, TryInto},
+    sync::Arc,
+    time::Instant,
+};
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
@@ -74,7 +78,9 @@ impl ExchangeRateOracle {
 
             let vote_msg = MsgExchangeRateVote {
                 denom: *denom,
-                exchange_rate,
+                exchange_rate: exchange_rate
+                    .try_into()
+                    .expect("invalid decimal precision (must be 0 or 18"),
                 salt: MsgExchangeRateVote::random_salt(),
                 feeder: state.feeder,
                 validator: state.validator,
