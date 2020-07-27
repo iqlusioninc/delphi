@@ -323,7 +323,7 @@ dependencies = [
  "subtle-encoding 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 1.0.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
- "warp 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "warp 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1749,6 +1749,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-futures"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "pin-project 0.4.22 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "tracing-log"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1901,7 +1910,7 @@ dependencies = [
 
 [[package]]
 name = "warp"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bytes 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1921,6 +1930,8 @@ dependencies = [
  "tokio 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-tungstenite 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tower-service 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing-futures 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "urlencoding 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -2250,6 +2261,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum tracing 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)" = "a41f40ed0e162c911ac6fcb53ecdc8134c46905fdbbae8c50add462a538b495f"
 "checksum tracing-attributes 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "99bbad0de3fd923c9c3232ead88510b783e5a4d16a6154adffa3d53308de984c"
 "checksum tracing-core 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)" = "0aa83a9a47081cd522c09c81b31aec2c9273424976f922ad61c053b58350b715"
+"checksum tracing-futures 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "ab7bb6f14721aa00656086e9335d363c5c8747bae02ebe32ea2c7dece5689b4c"
 "checksum tracing-log 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5e0f8c7178e13481ff6765bd169b33e8d554c5d2bbede5e32c356194be02b9b9"
 "checksum tracing-subscriber 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "192ca16595cdd0661ce319e8eede9c975f227cdaabc4faaefdc256f43d852e45"
 "checksum try-lock 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
@@ -2269,7 +2281,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum version_check 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)" = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 "checksum wait-timeout 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9f200f5b12eb75f8c1ed65abd4b2db8a6e1b138a20de009dacee265a2498f3f6"
 "checksum want 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1ce8a968cb1cd110d136ff8b819a556d6fb6d919363c61534f6860c7eb172ba0"
-"checksum warp 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0e95175b7a927258ecbb816bdada3cc469cb68593e7940b96a60f4af366a9970"
+"checksum warp 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "df341dee97c9ae29dfa5e0b0fbbbf620e0d6a36686389bedf83b3daeb8b0d0ac"
 "checksum wasi 0.9.0+wasi-snapshot-preview1 (registry+https://github.com/rust-lang/crates.io-index)" = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 "checksum wasm-bindgen 0.2.64 (registry+https://github.com/rust-lang/crates.io-index)" = "6a634620115e4a229108b71bde263bb4220c483b3f07f5ba514ee8d15064c4c2"
 "checksum wasm-bindgen-backend 0.2.64 (registry+https://github.com/rust-lang/crates.io-index)" = "3e53963b583d18a5aa3aaae4b4c1cb535218246131ba22a71f05b518098571df"
