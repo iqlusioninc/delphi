@@ -1,5 +1,5 @@
 //! GOPAX Source Provider
-//! <https://www.gopax.com/API/>
+//! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
 use super::Pair;
@@ -13,7 +13,8 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use serde::{Deserialize, Serialize};
+use rust_decimal::Decimal;
+use serde::{de, Deserialize, Serialize};
 
 /// Base URI for requests to the GOPAX API
 pub const BASE_URI: &str = "https://api.gopax.co.kr";
@@ -86,7 +87,18 @@ pub struct Quote {
 
 /// Prices and associated volumes
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PricePoint(String, f64, f64);
+pub struct PricePoint {
+    /// Id
+    pub id: String,
+
+    /// Price
+    #[serde(deserialize_with = "deserialize_decimal")]
+    pub price: Decimal,
+
+    /// Volume
+    #[serde(deserialize_with = "deserialize_decimal")]
+    pub volume: Decimal,
+}
 
 /// Error responses
 #[derive(Clone, Debug, Deserialize)]
@@ -94,6 +106,16 @@ pub struct PricePoint(String, f64, f64);
 enum Response {
     Success(Quote),
     Error { errormsg: String },
+}
+
+/// Deserialize decimal value
+fn deserialize_decimal<'de, D>(deserializer: D) -> Result<Decimal, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    // TODO: avoid floating point/string conversions
+    let value = f64::deserialize(deserializer)?;
+    value.to_string().parse().map_err(de::Error::custom)
 }
 
 #[cfg(test)]
