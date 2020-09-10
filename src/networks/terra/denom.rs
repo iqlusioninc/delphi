@@ -179,7 +179,7 @@ pub fn gdac_get_bid_weighted_average(response: &gdac::Quote) -> Result<Price, Er
 }
 
 /// GOPAX Ask price weighted average
-pub fn gopax_get_ask_weighted_average(response: &gopax::Quote) -> Result<Price, Error> {
+pub fn gopax_get_ask_weighted_average(response: &gopax::Response) -> Result<Price, Error> {
     // id, price, volume
     let mut price_sum_product = Decimal::from(0u8);
     let mut total = Decimal::from(0u8);
@@ -194,7 +194,7 @@ pub fn gopax_get_ask_weighted_average(response: &gopax::Quote) -> Result<Price, 
 }
 
 /// GOPAX Bid price weighted average
-pub fn gopax_get_bid_weighted_average(response: &gopax::Quote) -> Result<Price, Error> {
+pub fn gopax_get_bid_weighted_average(response: &gopax::Response) -> Result<Price, Error> {
     let mut price_sum_product = Decimal::from(0u8);
     let mut total = Decimal::from(0u8);
     for bid in &response.bid {
