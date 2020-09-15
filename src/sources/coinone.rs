@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair, Price};
+use super::{Currency, Pair, Price, BidBook, AskBook, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -15,6 +15,8 @@ use hyper::{
 };
 use hyper_rustls::HttpsConnector;
 use serde::{Deserialize, Serialize};
+use rust_decimal::Decimal;
+use std::str::FromStr;
 
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://api.coinone.co.kr/";
@@ -87,6 +89,26 @@ pub struct Response {
 
     /// Bid prices
     pub bid: Vec<PricePoint>,
+}
+
+impl AskBook for Response {
+    fn asks(&self) -> Result<Vec<PriceQuantity>,Error> {
+        let mut pq = vec![];
+        for p in self.ask.iter(){
+            pq.push(PriceQuantity{price: p.price.clone(), quantity: Decimal::from_str(&p.qty.clone())?});
+        }
+        return Ok(pq);
+    }
+}
+
+impl BidBook for Response {
+    fn bids(&self) -> Result<Vec<PriceQuantity>,Error>{
+        let mut pq = vec![];
+        for p in self.bid.iter(){
+            pq.push(PriceQuantity{price: p.price.clone(), quantity: Decimal::from_str(&p.qty.clone())?});
+        }
+        return Ok(pq);
+    }
 }
 
 /// Prices and associated volumes

@@ -19,6 +19,37 @@ use std::{
     str::FromStr,
 };
 
+
+trait AskBook {
+    fn asks(&self) -> Result<Vec<PriceQuantity>,Error>;
+}
+
+trait BidBook {
+    fn bids(&self) -> Result<Vec<PriceQuantity>,Error>;
+}
+
+fn weighted_avg_ask<T:AskBook>(asks:&T) -> Result<Price, Error>{
+    let asks = asks.asks()?;
+    let mut price_sum_product = Decimal::from(0u8);
+    let mut total = Decimal::from(0u8);
+    for ask in asks {
+        price_sum_product += ask.price.0 * ask.quantity;
+        total += ask.quantity;
+    }
+
+    let weighted_avg = Price::new(price_sum_product / total)?;
+    Ok(weighted_avg)
+
+}
+
+
+
+pub struct PriceQuantity {
+    pub price: Price,
+    pub quantity: Decimal
+
+}
+
 /// Currencies for use in trading pairs
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Currency {
