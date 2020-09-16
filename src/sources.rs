@@ -19,16 +19,16 @@ use std::{
     str::FromStr,
 };
 
-
 trait AskBook {
-    fn asks(&self) -> Result<Vec<PriceQuantity>,Error>;
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error>;
 }
 
 trait BidBook {
-    fn bids(&self) -> Result<Vec<PriceQuantity>,Error>;
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error>;
 }
 
-fn weighted_avg_ask<T:AskBook>(asks:&T) -> Result<Price, Error>{
+/// Ask price weighted average
+fn weighted_avg_ask<T: AskBook>(asks: &T) -> Result<Price, Error> {
     let asks = asks.asks()?;
     let mut price_sum_product = Decimal::from(0u8);
     let mut total = Decimal::from(0u8);
@@ -39,10 +39,10 @@ fn weighted_avg_ask<T:AskBook>(asks:&T) -> Result<Price, Error>{
 
     let weighted_avg = Price::new(price_sum_product / total)?;
     Ok(weighted_avg)
-
 }
 
-fn weighted_avg_bid<T:BidBook>(bids:&T) -> Result<Price, Error>{
+/// Bid price weighted average
+fn weighted_avg_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
     let bids = bids.bids()?;
     let mut price_sum_product = Decimal::from(0u8);
     let mut total = Decimal::from(0u8);
@@ -53,13 +53,15 @@ fn weighted_avg_bid<T:BidBook>(bids:&T) -> Result<Price, Error>{
 
     let weighted_avg = Price::new(price_sum_product / total)?;
     Ok(weighted_avg)
-
 }
 
+/// Quoted prices and quantities as sourced from the order book
 pub struct PriceQuantity {
+    ///Price
     pub price: Price,
-    pub quantity: Decimal
 
+    ///Quantity
+    pub quantity: Decimal,
 }
 
 /// Currencies for use in trading pairs

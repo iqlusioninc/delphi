@@ -1,7 +1,7 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::{Pair, Price};
+use super::{AskBook, BidBook, Pair, Price, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -12,6 +12,7 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
+use rust_decimal::Decimal;
 use serde::{de, Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
@@ -93,6 +94,34 @@ pub struct Quote {
 
     /// Bid price
     pub bid: Vec<PricePoint>,
+}
+
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Quote {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        let mut pq = vec![];
+        for p in self.ask.iter() {
+            pq.push(PriceQuantity {
+                price: p.price.clone(),
+                quantity: Decimal::from_str(&p.volume.clone())?,
+            });
+        }
+        return Ok(pq);
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Quote {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        let mut pq = vec![];
+        for p in self.bid.iter() {
+            pq.push(PriceQuantity {
+                price: p.price.clone(),
+                quantity: Decimal::from_str(&p.volume.clone())?,
+            });
+        }
+        return Ok(pq);
+    }
 }
 
 /// Prices and associated volumes

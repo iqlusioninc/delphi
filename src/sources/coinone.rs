@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair, Price, BidBook, AskBook, PriceQuantity};
+use super::{AskBook, BidBook, Currency, Pair, Price, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -14,8 +14,8 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 /// Base URI for requests to the Coinone API
@@ -91,21 +91,29 @@ pub struct Response {
     pub bid: Vec<PricePoint>,
 }
 
+///This trait returns a vector of ask prices and quantities
 impl AskBook for Response {
-    fn asks(&self) -> Result<Vec<PriceQuantity>,Error> {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
         let mut pq = vec![];
-        for p in self.ask.iter(){
-            pq.push(PriceQuantity{price: p.price.clone(), quantity: Decimal::from_str(&p.qty.clone())?});
+        for p in self.ask.iter() {
+            pq.push(PriceQuantity {
+                price: p.price.clone(),
+                quantity: Decimal::from_str(&p.qty.clone())?,
+            });
         }
         return Ok(pq);
     }
 }
 
+///This trait returns a vector of bid prices and quantities
 impl BidBook for Response {
-    fn bids(&self) -> Result<Vec<PriceQuantity>,Error>{
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
         let mut pq = vec![];
-        for p in self.bid.iter(){
-            pq.push(PriceQuantity{price: p.price.clone(), quantity: Decimal::from_str(&p.qty.clone())?});
+        for p in self.bid.iter() {
+            pq.push(PriceQuantity {
+                price: p.price.clone(),
+                quantity: Decimal::from_str(&p.qty.clone())?,
+            });
         }
         return Ok(pq);
     }

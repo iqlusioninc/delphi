@@ -2,7 +2,7 @@
 //! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::Pair;
+use super::{AskBook, BidBook, Pair, Price, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -90,6 +90,33 @@ pub struct Response {
     pub ask: Vec<PricePoint>,
 }
 
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Response {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        let mut pq = vec![];
+        for p in self.ask.iter() {
+            pq.push(PriceQuantity {
+                price: Price::new(p.price)?,
+                quantity: p.volume.clone(),
+            });
+        }
+        return Ok(pq);
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Response {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        let mut pq = vec![];
+        for p in self.bid.iter() {
+            pq.push(PriceQuantity {
+                price: Price::new(p.price)?,
+                quantity: p.volume,
+            });
+        }
+        return Ok(pq);
+    }
+}
 /// Prices and associated volumes
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PricePoint {
