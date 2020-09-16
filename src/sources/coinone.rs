@@ -95,11 +95,11 @@ pub struct Response {
 impl AskBook for Response {
     fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
         self.ask.iter().map(|p| {
-            p.qty().parse().map(|quantity| PriceQuantity {
+            p.qty.parse().map(|quantity| PriceQuantity {
                 price: p.price.clone(),
                 quantity
             })
-        }).collect()
+        }).collect() 
     }
 }
 
