@@ -93,28 +93,28 @@ pub struct Response {
 ///This trait returns a vector of ask prices and quantities
 impl AskBook for Response {
     fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
-        let mut pq = vec![];
-        for p in self.ask.iter() {
-            pq.push(PriceQuantity {
-                price: Price::new(p.price)?,
-                quantity: p.volume.clone(),
-            });
-        }
-        return Ok(pq);
+        Ok(self
+            .ask
+            .iter()
+            .map(|p| PriceQuantity {
+                price: Price::new(p.price).unwrap(),
+                quantity: p.volume,
+            })
+            .collect())
     }
 }
 
 ///This trait returns a vector of bid prices and quantities
 impl BidBook for Response {
     fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
-        let mut pq = vec![];
-        for p in self.bid.iter() {
-            pq.push(PriceQuantity {
-                price: Price::new(p.price)?,
+        Ok(self
+            .bid
+            .iter()
+            .map(|p| PriceQuantity {
+                price: Price::new(p.price).unwrap(),
                 quantity: p.volume,
-            });
-        }
-        return Ok(pq);
+            })
+            .collect())
     }
 }
 /// Prices and associated volumes

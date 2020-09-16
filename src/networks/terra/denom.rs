@@ -4,14 +4,10 @@ use crate::error::Error;
 use crate::sources::gdac::GdacSource;
 use crate::sources::gopax::GopaxSource;
 use crate::sources::{coinone::CoinoneSource, Currency, Pair, Price};
-use crate::sources::{
-    weighted_avg_ask,
-    weighted_avg_bid,
-};
+use crate::sources::{weighted_avg_ask, weighted_avg_bid};
 use rust_decimal::Decimal;
 use std::convert::TryFrom;
 use std::fmt::{self, Display};
-
 
 /// Denomination
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -124,5 +120,3 @@ impl Display for Denom {
         f.write_str(self.as_str())
     }
 }
-
-

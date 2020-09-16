@@ -14,9 +14,7 @@ use hyper::{
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://api.coinone.co.kr/";
@@ -94,26 +92,36 @@ pub struct Response {
 ///This trait returns a vector of ask prices and quantities
 impl AskBook for Response {
     fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
-        self.ask.iter().map(|p| {
-            p.qty.parse().map(|quantity| PriceQuantity {
-                price: p.price.clone(),
-                quantity
+        self.ask
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
             })
-        }).collect() 
+            .collect()
     }
 }
 
 ///This trait returns a vector of bid prices and quantities
 impl BidBook for Response {
     fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
-        let mut pq = vec![];
-        for p in self.bid.iter() {
-            pq.push(PriceQuantity {
-                price: p.price.clone(),
-                quantity: Decimal::from_str(&p.qty.clone())?,
-            });
-        }
-        return Ok(pq);
+        self.bid
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
     }
 }
 

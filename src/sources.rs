@@ -19,7 +19,6 @@ use std::{
     str::FromStr,
 };
 
-
 ///This trait allows writing generic functions over ask orderbook from multiple sources
 pub trait AskBook {
     ///This function returns a vector of ask prices and volumes
