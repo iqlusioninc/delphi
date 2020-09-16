@@ -42,7 +42,19 @@ fn weighted_avg_ask<T:AskBook>(asks:&T) -> Result<Price, Error>{
 
 }
 
+fn weighted_avg_bid<T:BidBook>(bids:&T) -> Result<Price, Error>{
+    let bids = bids.bids()?;
+    let mut price_sum_product = Decimal::from(0u8);
+    let mut total = Decimal::from(0u8);
+    for bid in bids {
+        price_sum_product += bid.price.0 * bid.quantity;
+        total += bid.quantity;
+    }
 
+    let weighted_avg = Price::new(price_sum_product / total)?;
+    Ok(weighted_avg)
+
+}
 
 pub struct PriceQuantity {
     pub price: Price,
