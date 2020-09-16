@@ -94,14 +94,12 @@ pub struct Response {
 ///This trait returns a vector of ask prices and quantities
 impl AskBook for Response {
     fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
-        let mut pq = vec![];
-        for p in self.ask.iter() {
-            pq.push(PriceQuantity {
+        self.ask.iter().map(|p| {
+            p.qty().parse().map(|quantity| PriceQuantity {
                 price: p.price.clone(),
-                quantity: Decimal::from_str(&p.qty.clone())?,
-            });
-        }
-        return Ok(pq);
+                quantity
+            })
+        }).collect()
     }
 }
 
