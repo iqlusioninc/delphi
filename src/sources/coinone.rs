@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair, Price};
+use super::{AskBook, BidBook, Currency, Pair, Price, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -87,6 +87,42 @@ pub struct Response {
 
     /// Bid prices
     pub bid: Vec<PricePoint>,
+}
+
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Response {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.ask
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Response {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.bid
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
 }
 
 /// Prices and associated volumes

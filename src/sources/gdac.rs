@@ -1,7 +1,7 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::{Pair, Price};
+use super::{AskBook, BidBook, Pair, Price, PriceQuantity};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -93,6 +93,42 @@ pub struct Quote {
 
     /// Bid price
     pub bid: Vec<PricePoint>,
+}
+
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Quote {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.ask
+            .iter()
+            .map(|p| {
+                p.volume
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Quote {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.bid
+            .iter()
+            .map(|p| {
+                p.volume
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price.clone(),
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
 }
 
 /// Prices and associated volumes

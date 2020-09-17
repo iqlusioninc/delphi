@@ -3,12 +3,11 @@
 use crate::error::Error;
 use crate::sources::gdac::GdacSource;
 use crate::sources::gopax::GopaxSource;
-use crate::sources::{coinone, gdac, gopax};
 use crate::sources::{coinone::CoinoneSource, Currency, Pair, Price};
+use crate::sources::{weighted_avg_ask, weighted_avg_bid};
 use rust_decimal::Decimal;
 use std::convert::TryFrom;
 use std::fmt::{self, Display};
-use std::str::FromStr;
 
 /// Denomination
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -51,9 +50,9 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&coinone_response);
-                let ask_weighted_avg = get_ask_weighted_average(&coinone_response)?;
+                let ask_weighted_avg = weighted_avg_ask(&coinone_response)?;
                 dbg!(&ask_weighted_avg);
-                let bid_weighted_avg = get_bid_weighted_average(&coinone_response)?;
+                let bid_weighted_avg = weighted_avg_bid(&coinone_response)?;
                 dbg!(&bid_weighted_avg);
 
                 // Source: GDAC
@@ -61,9 +60,9 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&gdac_response);
-                let gdac_ask_weighted_avg = gdac_get_ask_weighted_average(&gdac_response)?;
+                let gdac_ask_weighted_avg = weighted_avg_ask(&gdac_response)?;
                 dbg!(&gdac_ask_weighted_avg);
-                let gdac_bid_weighted_avg = gdac_get_bid_weighted_average(&gdac_response)?;
+                let gdac_bid_weighted_avg = weighted_avg_bid(&gdac_response)?;
                 dbg!(&gdac_bid_weighted_avg);
 
                 // Source: GOPAX
@@ -71,9 +70,9 @@ impl Denom {
                     .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
                     .await?;
                 dbg!(&gopax_response);
-                let gopax_ask_weighted_avg = gopax_get_ask_weighted_average(&gopax_response)?;
+                let gopax_ask_weighted_avg = weighted_avg_ask(&gopax_response)?;
                 dbg!(&gopax_ask_weighted_avg);
-                let gopax_bid_weighted_avg = gopax_get_bid_weighted_average(&gopax_response)?;
+                let gopax_bid_weighted_avg = weighted_avg_bid(&gopax_response)?;
                 dbg!(&gopax_bid_weighted_avg);
 
                 // Weighted avgs for all sources
@@ -120,89 +119,4 @@ impl Display for Denom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
-}
-
-/// Ask price weighted average
-pub fn get_ask_weighted_average(response: &coinone::Response) -> Result<Price, Error> {
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for ask in &response.ask {
-        let quantity = Decimal::from_str(&ask.qty.clone())?;
-        price_sum_product += ask.price.0 * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
-}
-
-/// Bid price weighted average
-pub fn get_bid_weighted_average(response: &coinone::Response) -> Result<Price, Error> {
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for bid in &response.bid {
-        let quantity = Decimal::from_str(&bid.qty.clone())?;
-        price_sum_product += bid.price.0 * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
-}
-
-/// GDAC Ask price weighted average
-pub fn gdac_get_ask_weighted_average(response: &gdac::Quote) -> Result<Price, Error> {
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for ask in &response.ask {
-        let quantity = Decimal::from_str(&ask.volume.clone())?;
-        price_sum_product += ask.price.0 * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
-}
-
-/// GDAC Bid price weighted average
-pub fn gdac_get_bid_weighted_average(response: &gdac::Quote) -> Result<Price, Error> {
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for bid in &response.bid {
-        let quantity = Decimal::from_str(&bid.volume.clone())?;
-        price_sum_product += bid.price.0 * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
-}
-
-/// GOPAX Ask price weighted average
-pub fn gopax_get_ask_weighted_average(response: &gopax::Response) -> Result<Price, Error> {
-    // id, price, volume
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for ask in &response.ask {
-        let quantity = ask.volume;
-        price_sum_product += ask.price * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
-}
-
-/// GOPAX Bid price weighted average
-pub fn gopax_get_bid_weighted_average(response: &gopax::Response) -> Result<Price, Error> {
-    let mut price_sum_product = Decimal::from(0u8);
-    let mut total = Decimal::from(0u8);
-    for bid in &response.bid {
-        let quantity = bid.volume;
-        price_sum_product += bid.price * quantity;
-        total += quantity;
-    }
-
-    let weighted_avg = Price::new(price_sum_product / total)?;
-    Ok(weighted_avg)
 }
