@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::sources::gdac::GdacSource;
 use crate::sources::gopax::GopaxSource;
 use crate::sources::{coinone::CoinoneSource, Currency, Pair, Price};
-use crate::sources::{weighted_avg_ask, weighted_avg_bid};
+use crate::sources::{midpoint, weighted_avg_ask, weighted_avg_bid};
 use rust_decimal::Decimal;
 use std::convert::TryFrom;
 use std::fmt::{self, Display};
@@ -54,6 +54,8 @@ impl Denom {
                 dbg!(&ask_weighted_avg);
                 let bid_weighted_avg = weighted_avg_bid(&coinone_response)?;
                 dbg!(&bid_weighted_avg);
+                let coinone_midpoint = midpoint(&coinone_response)?;
+                dbg!(&coinone_midpoint);
 
                 // Source: GDAC
                 let gdac_response = GdacSource::new()
@@ -64,6 +66,8 @@ impl Denom {
                 dbg!(&gdac_ask_weighted_avg);
                 let gdac_bid_weighted_avg = weighted_avg_bid(&gdac_response)?;
                 dbg!(&gdac_bid_weighted_avg);
+                let gdac_midpoint = midpoint(&gdac_response)?;
+                dbg!(&gdac_midpoint);
 
                 // Source: GOPAX
                 let gopax_response = GopaxSource::new()
@@ -74,8 +78,15 @@ impl Denom {
                 dbg!(&gopax_ask_weighted_avg);
                 let gopax_bid_weighted_avg = weighted_avg_bid(&gopax_response)?;
                 dbg!(&gopax_bid_weighted_avg);
+                let gopax_midpoint = midpoint(&gopax_response)?;
+                dbg!(&gopax_midpoint);
 
-                // Weighted avgs for all sources
+                //Midpoint avgs for all sources
+                let midpoint_avg =
+                    (coinone_midpoint.0 + gdac_midpoint.0 + gopax_midpoint.0) / Decimal::from(3);
+                dbg!(&midpoint_avg);
+
+                // Weighted avg for all sources
                 let coinone_weighted_avg =
                     Price::new((ask_weighted_avg.0 + bid_weighted_avg.0) / Decimal::new(2, 0))?;
                 dbg!(&coinone_weighted_avg);
