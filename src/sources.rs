@@ -15,6 +15,7 @@ use serde::{
     ser, Deserialize, Serialize,
 };
 use std::{
+    cmp::Ordering,
     fmt::{self, Display},
     str::FromStr,
 };
@@ -59,13 +60,53 @@ pub fn weighted_avg_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
     Ok(weighted_avg)
 }
 
+/// Highest ask price
+pub fn lowest_ask<T: AskBook>(asks: &T) -> Result<Price, Error> {
+    let mut asks = asks.asks()?;
+    asks.sort();
+    Ok(asks.first().unwrap().price.clone())
+}
+
+/// Lowest bid price
+pub fn highest_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
+    let mut bids = bids.bids()?;
+    bids.sort();
+    Ok(bids.last().unwrap().price.clone())
+}
+
+/// Midpoint of highest ask and lowest bid price
+pub fn midpoint<T: AskBook + BidBook>(book: &T) -> Result<Price, Error> {
+    let lowest_ask = lowest_ask(book)?;
+    let highest_bid = highest_bid(book)?;
+    Price::new((lowest_ask.0 + highest_bid.0) / Decimal::from(2))
+}
+
 /// Quoted prices and quantities as sourced from the order book
+#[derive(Eq)]
 pub struct PriceQuantity {
     ///Price
     pub price: Price,
 
     ///Quantity
     pub quantity: Decimal,
+}
+
+impl Ord for PriceQuantity {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.price.cmp(&other.price)
+    }
+}
+
+impl PartialOrd for PriceQuantity {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for PriceQuantity {
+    fn eq(&self, other: &Self) -> bool {
+        self.price == other.price
+    }
 }
 
 /// Currencies for use in trading pairs
