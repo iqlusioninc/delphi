@@ -61,24 +61,24 @@ pub fn weighted_avg_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
 }
 
 /// Highest ask price
-pub fn highest_ask<T: AskBook>(asks: &T) -> Result<Price, Error> {
+pub fn lowest_ask<T: AskBook>(asks: &T) -> Result<Price, Error> {
     let mut asks = asks.asks()?;
     asks.sort();
-    Ok(asks.last().unwrap().price.clone())
+    Ok(asks.first().unwrap().price.clone())
 }
 
 /// Lowest bid price
-pub fn lowest_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
+pub fn highest_bid<T: BidBook>(bids: &T) -> Result<Price, Error> {
     let mut bids = bids.bids()?;
     bids.sort();
-    Ok(bids.first().unwrap().price.clone())
+    Ok(bids.last().unwrap().price.clone())
 }
 
 /// Midpoint of highest ask and lowest bid price
 pub fn midpoint<T: AskBook + BidBook>(book: &T) -> Result<Price, Error> {
-    let highest_ask = highest_ask(book)?;
-    let lowest_bid = lowest_bid(book)?;
-    Price::new((highest_ask.0 + lowest_bid.0) / Decimal::from(2))
+    let lowest_ask = lowest_ask(book)?;
+    let highest_bid = highest_bid(book)?;
+    Price::new((lowest_ask.0 + highest_bid.0) / Decimal::from(2))
 }
 
 /// Quoted prices and quantities as sourced from the order book
