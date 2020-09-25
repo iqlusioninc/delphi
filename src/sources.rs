@@ -1,5 +1,6 @@
 //! Data sources
 
+pub mod alphavantage;
 pub mod coinone;
 pub mod gdac;
 pub mod gopax;
