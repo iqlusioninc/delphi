@@ -7,7 +7,7 @@ use crate::error::Error;
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
-    header, Body, Request,
+    header, Body, Request, Uri,
 };
 use hyper_rustls::HttpsConnector;
 use serde::{Deserialize, Serialize};
@@ -35,19 +35,21 @@ impl AlphavantageParams {
             ("function", &self.function),
             ("from_currency", &self.from_currency),
             ("to_currency", &self.to_currency),
-            ("apikey", &self.apikey)
-        ].iter()
-         .map(|(k,v)| format!("{}={}", k, v)) // TODO: add urlencoding
-         .collect::<Vec<_>>()
-         .join("&");
-    
+            ("apikey", &self.apikey),
+        ]
+        .iter()
+        .map(|(k, v)| format!("{}={}", k, v)) // TODO: add urlencoding
+        .collect::<Vec<_>>()
+        .join("&");
+
         let path_and_query = format!("/query?{}", query);
-    
-        uri::Builder::new()
+
+        Uri::builder()
             .scheme("https")
             .authority("www.alphavantage.co")
             .path_and_query(path_and_query.as_str())
             .build()
+            .unwrap()
     }
 }
 
@@ -69,7 +71,7 @@ impl AlphavantageSource {
             apikey: std::env::var("ALPHAVANTAGE_API").expect("Must set the API key"),
         };
 
-        let uri = format!("{}query?{}", BASE_URI, params.to_query_string());
+        let uri = params.to_request_uri();
 
         let mut request = Request::builder()
             .method("GET")
