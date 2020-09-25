@@ -2,7 +2,7 @@
 //! <https://www.alphavantage.co/>
 //!
 
-use super::{Pair, Price};
+use super::{Pair, Price, USER_AGENT};
 use crate::error::Error;
 use bytes::buf::ext::BufExt;
 use hyper::{
@@ -14,9 +14,6 @@ use serde::{Deserialize, Serialize};
 
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://www.alphavantage.co/";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// Source provider for Alphavantage
 pub struct AlphavantageSource {

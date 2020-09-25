@@ -21,6 +21,9 @@ use std::{
     str::FromStr,
 };
 
+/// User-Agent to send in HTTP request
+pub const USER_AGENT: &str = "iqlusion delphi";
+
 ///This trait allows writing generic functions over ask orderbook from multiple sources
 pub trait AskBook {
     ///This function returns a vector of ask prices and volumes
