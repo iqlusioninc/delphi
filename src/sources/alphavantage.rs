@@ -33,11 +33,24 @@ pub struct AlphavantageParams {
 
 impl AlphavantageParams {
     ///Convert params into url query parameters
-    pub fn to_query_string(&self) -> String {
-        format!(
-            "function={}&from_currency={}&to_currency={}&apikey={}",
-            self.function, self.from_currency, self.to_currency, self.apikey
-        )
+    pub fn to_request_uri(&self) -> Uri {
+        let query = [
+            ("function", &self.function),
+            ("from_currency", &self.from_currency),
+            ("to_currency", &self.to_currency),
+            ("apikey", &self.apikey)
+        ].iter()
+         .map(|(k,v)| format!("{}={}", k, v)) // TODO: add urlencoding
+         .collect::<Vec<_>>()
+         .join("&");
+    
+        let path_and_query = format!("/query?{}", query);
+    
+        uri::Builder::new()
+            .scheme("https")
+            .authority("www.alphavantage.co")
+            .path_and_query(path_and_query.as_str())
+            .build()
     }
 }
 
