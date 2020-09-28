@@ -131,23 +131,14 @@ pub struct RealtimeCurrencyExchangeRate {
 #[cfg(test)]
 mod tests {
     use super::AlphavantageSource;
-    use std::future::Future;
-
-    fn block_on<F: Future>(future: F) -> F::Output {
-        tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(future)
-    }
-
-    /// `trading_pairs()` test with known currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_ok() {
+    async fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
-        let _response = block_on(AlphavantageSource::new().trading_pairs(&pair)).unwrap();
+        let _response = AlphavantageSource::new()
+            .trading_pairs(&pair)
+            .await
+            .unwrap();
     }
 
     // / `trading_pairs()` with invalid currency pair

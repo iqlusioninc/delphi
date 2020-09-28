@@ -28,7 +28,7 @@ sha2 = "0.9"
 stdtx = "0.2"
 subtle-encoding = "0.5"
 thiserror = "1"
-tokio = "0.2"
+tokio = { version = "0.2", features = ["rt-threaded", "macros"]}
 warp = "0.2"
 
 [dev-dependencies]
