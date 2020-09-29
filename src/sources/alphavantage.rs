@@ -3,6 +3,7 @@
 //!
 
 use super::{Pair, Price, USER_AGENT};
+use crate::application::app_config;
 use crate::error::Error;
 use bytes::buf::ext::BufExt;
 use hyper::{
@@ -68,7 +69,12 @@ impl AlphavantageSource {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),
             to_currency: pair.1.to_string(),
-            apikey: std::env::var("ALPHAVANTAGE_API").expect("Must set the API key"),
+            apikey: app_config()
+                .source
+                .alphavantage
+                .clone()
+                .expect("no AlphaVantage config")
+                .apikey,
         };
 
         let uri = params.to_request_uri();
