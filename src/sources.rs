@@ -1,5 +1,6 @@
 //! Data sources
 
+pub mod binance;
 pub mod coinone;
 pub mod gdac;
 pub mod gopax;

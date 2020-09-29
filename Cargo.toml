@@ -22,6 +22,7 @@ percent-encoding = "2.1"
 rand = "0.7"
 rust_decimal = "1"
 once_cell = "1"
+openlimits = { git = "https://github.com/iqlusioninc/openlimits.git" }
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1"
 sha2 = "0.9"
