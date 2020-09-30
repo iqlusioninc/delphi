@@ -1,9 +1,10 @@
 //! Exchange rate denominations
 
+use crate::application::app_config;
 use crate::error::Error;
 use crate::sources::gdac::GdacSource;
 use crate::sources::midpoint;
-use crate::sources::{coinone::CoinoneSource, Currency, Pair};
+use crate::sources::{alphavantage::AlphavantageSource, coinone::CoinoneSource, Currency, Pair};
 use rust_decimal::Decimal;
 use std::convert::TryFrom;
 use std::fmt::{self, Display};
@@ -69,6 +70,34 @@ impl Denom {
                 dbg!(&midpoint_avg, midpoint_avg.scale());
                 Ok(stdtx::Decimal::try_from(midpoint_avg)?)
             }
+
+            Denom::UMNT => {
+                // Source: AlphaVantage
+                let alphavantage_response = AlphavantageSource::new(
+                    app_config()
+                        .source
+                        .alphavantage
+                        .clone()
+                        .expect("no AlphaVantage config")
+                        .apikey,
+                )
+                .trading_pairs(&Pair(Currency::Krw, Currency::Other("SGD".to_owned())))
+                .await?;
+
+                // Source: CoinOne
+                let coinone_response = CoinoneSource::new()
+                    .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
+                    .await?;
+                // dbg!(&coinone_response);
+                let coinone_midpoint = midpoint(&coinone_response)?;
+
+                let krw_sgd = coinone_midpoint.0 * alphavantage_response.realtime_currency_exchange_rate.exchange_rate.0;
+                dbg!(krw_sgd);
+
+                Ok(stdtx::Decimal::try_from(krw_sgd)?)
+               
+            },
+
             _ => Ok(stdtx::Decimal::from(-1i8)),
         }
     }
