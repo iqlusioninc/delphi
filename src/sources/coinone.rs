@@ -3,7 +3,7 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{AskBook, BidBook, Currency, Pair, Price, PriceQuantity};
+use super::{AskBook, BidBook, Currency, Pair, Price, PriceQuantity, USER_AGENT};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -18,9 +18,6 @@ use serde::{Deserialize, Serialize};
 
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://api.coinone.co.kr/";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// Source provider for Coinone
 pub struct CoinoneSource {

@@ -1,5 +1,6 @@
 //! Data sources
 
+pub mod alphavantage;
 pub mod coinone;
 pub mod gdac;
 pub mod gopax;
@@ -19,6 +20,9 @@ use std::{
     fmt::{self, Display},
     str::FromStr,
 };
+
+/// User-Agent to send in HTTP request
+pub const USER_AGENT: &str = "iqlusion delphi";
 
 ///This trait allows writing generic functions over ask orderbook from multiple sources
 pub trait AskBook {

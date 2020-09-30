@@ -9,4 +9,24 @@ use serde::{Deserialize, Serialize};
 /// Delphi Configuration
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct DelphiConfig {}
+pub struct DelphiConfig {
+    /// Source configuration
+    #[serde(default)]
+    pub source: SourceConfig,
+}
+
+/// Source Configuration
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SourceConfig {
+    /// AlphaVantage
+    pub alphavantage: Option<AlphavantageConfig>,
+}
+
+/// AlphaVantage Configuration
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AlphavantageConfig {
+    /// API key
+    pub apikey: String,
+}

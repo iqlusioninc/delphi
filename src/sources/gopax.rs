@@ -2,7 +2,7 @@
 //! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::{AskBook, BidBook, Pair, Price, PriceQuantity};
+use super::{AskBook, BidBook, Pair, Price, PriceQuantity, USER_AGENT};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
@@ -19,9 +19,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Base URI for requests to the GOPAX API
 pub const BASE_URI: &str = "https://api.gopax.co.kr";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// Source provider for GOPAX
 pub struct GopaxSource {
