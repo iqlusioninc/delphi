@@ -87,12 +87,14 @@ impl Denom {
                 // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
 
-                let krw_sgd = coinone_midpoint.0
+                let mut luna_sgd = coinone_midpoint.0
                     * alphavantage_response
                         .realtime_currency_exchange_rate
                         .exchange_rate
                         .0;
-                dbg!(krw_sgd);
+                dbg!(luna_sgd);
+
+                luna_sgd.rescale(18);
 
                 Ok(stdtx::Decimal::try_from(krw_sgd)?)
             }
