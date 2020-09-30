@@ -3,7 +3,6 @@
 //!
 
 use super::{Pair, Price, USER_AGENT};
-use crate::application::app_config;
 use crate::error::Error;
 use bytes::buf::ext::BufExt;
 use hyper::{
@@ -19,6 +18,7 @@ pub const BASE_URI: &str = "https://www.alphavantage.co/";
 /// Source provider for Alphavantage
 pub struct AlphavantageSource {
     http_client: Client<HttpsConnector<HttpConnector>>,
+    apikey: String,
 }
 
 ///Parameters for queries
@@ -57,9 +57,10 @@ impl AlphavantageParams {
 impl AlphavantageSource {
     /// Create a new Alphavantage source provider
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
+    pub fn new(apikey: String) -> Self {
         Self {
             http_client: Client::builder().build(HttpsConnector::new()),
+            apikey,
         }
     }
 
@@ -69,12 +70,7 @@ impl AlphavantageSource {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),
             to_currency: pair.1.to_string(),
-            apikey: app_config()
-                .source
-                .alphavantage
-                .clone()
-                .expect("no AlphaVantage config")
-                .apikey,
+            apikey: self.apikey.clone(),
         };
 
         let uri = params.to_request_uri();
@@ -141,10 +137,13 @@ mod tests {
     #[ignore]
     async fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
-        let _response = AlphavantageSource::new()
-            .trading_pairs(&pair)
-            .await
-            .unwrap();
+        let _response = AlphavantageSource::new(
+            std::env::var("ALPHAVANTAGE_API")
+                .expect("Please set the ALPHAVANTAGE_API env variable"),
+        )
+        .trading_pairs(&pair)
+        .await
+        .unwrap();
     }
 
     // / `trading_pairs()` with invalid currency pair
