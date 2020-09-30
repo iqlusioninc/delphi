@@ -1,13 +1,19 @@
 //! Exchange rate denominations
 
-use crate::config::AlphavantageConfig;
-use crate::error::Error;
-use crate::sources::gdac::GdacSource;
-use crate::sources::midpoint;
-use crate::sources::{alphavantage::AlphavantageSource, coinone::CoinoneSource, Currency, Pair};
+use crate::{
+    config::AlphavantageConfig,
+    currency::Currency,
+    error::Error,
+    sources::{
+        alphavantage::AlphavantageSource, coinone::CoinoneSource, gdac::GdacSource, midpoint,
+    },
+    trading_pair::TradingPair,
+};
 use rust_decimal::Decimal;
-use std::convert::TryFrom;
-use std::fmt::{self, Display};
+use std::{
+    convert::TryInto,
+    fmt::{self, Display},
+};
 
 /// Denomination
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -50,7 +56,7 @@ impl Denom {
             Denom::UKRW => {
                 // Source: CoinOne
                 let coinone_response = CoinoneSource::new()
-                    .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
@@ -58,45 +64,49 @@ impl Denom {
 
                 // Source: GDAC
                 let gdac_response = GdacSource::new()
-                    .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&gdac_response);
                 let gdac_midpoint = midpoint(&gdac_response)?;
                 dbg!(&gdac_midpoint);
 
                 //Midpoint avg for all sources
-                let mut midpoint_avg = (coinone_midpoint.0 + gdac_midpoint.0) / Decimal::from(2);
+                let mut midpoint_avg = Decimal::from((coinone_midpoint + gdac_midpoint) / 2);
                 dbg!(&midpoint_avg);
 
                 dbg!(&midpoint_avg, midpoint_avg.scale());
                 midpoint_avg.rescale(18);
                 dbg!(&midpoint_avg, midpoint_avg.scale());
-                Ok(stdtx::Decimal::try_from(midpoint_avg)?)
+                Ok(midpoint_avg.try_into()?)
             }
 
             Denom::UMNT => {
                 // Source: AlphaVantage
                 let alphavantage_response = AlphavantageSource::new(alphavantage_config.apikey)
-                    .trading_pairs(&Pair(Currency::Krw, Currency::Other("SGD".to_owned())))
+                    .trading_pairs(&TradingPair(
+                        Currency::Krw,
+                        Currency::Other("SGD".to_owned()),
+                    ))
                     .await?;
 
                 // Source: CoinOne
                 let coinone_response = CoinoneSource::new()
-                    .trading_pairs(&Pair(Currency::Luna, Currency::Krw))
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
 
-                let mut luna_sgd = coinone_midpoint.0
-                    * alphavantage_response
-                        .realtime_currency_exchange_rate
-                        .exchange_rate
-                        .0;
+                let mut luna_sgd = Decimal::from(
+                    coinone_midpoint
+                        * alphavantage_response
+                            .realtime_currency_exchange_rate
+                            .exchange_rate,
+                );
                 dbg!(luna_sgd);
 
                 luna_sgd.rescale(18);
 
-                Ok(stdtx::Decimal::try_from(luna_sgd)?)
+                Ok(luna_sgd.try_into()?)
             }
 
             _ => Ok(stdtx::Decimal::from(-1i8)),

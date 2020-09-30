@@ -1,11 +1,8 @@
 //! Binance Source Provider
 //! <https://binance.com/>
 
-use super::{Currency, Pair, USER_AGENT};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::USER_AGENT;
+use crate::{prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -38,14 +35,14 @@ impl BinanceSource {
 
     /// Get the average price for the given pair, approximating prices for
     /// pairs which don't natively exist on binance
-    pub async fn approx_price_for_pair(&self, pair: &Pair) -> Result<Decimal, Error> {
+    pub async fn approx_price_for_pair(&self, pair: &TradingPair) -> Result<Price, Error> {
         if let Ok(symbol_name) = SymbolName::try_from(pair) {
             return self.avg_price_for_symbol(symbol_name).await;
         }
 
         // Approximate prices by querying other currency pairs
         match pair {
-            Pair(Currency::Luna, Currency::Krw) => {
+            TradingPair(Currency::Luna, Currency::Krw) => {
                 let (luna_btc, btc_bkrw) = tokio::join!(
                     self.avg_price_for_symbol(SymbolName::LunaBtc),
                     self.avg_price_for_symbol(SymbolName::BtcBkrw)
@@ -54,14 +51,14 @@ impl BinanceSource {
                 // Compute KRW by proxy using LUNA -> BTC -> KRW-ish
                 Ok(luna_btc? * btc_bkrw?)
             }
-            Pair(Currency::Luna, Currency::Usd) => {
+            TradingPair(Currency::Luna, Currency::Usd) => {
                 let (luna_busd, luna_usdt) = tokio::join!(
                     self.avg_price_for_symbol(SymbolName::LunaBusd),
                     self.avg_price_for_symbol(SymbolName::LunaUsdt)
                 );
 
                 // Give BUSD and USDT equal weight
-                let avg = (luna_busd? + luna_usdt?) / Decimal::from(2);
+                let avg = (luna_busd? + luna_usdt?) / 2;
                 Ok(avg)
             }
             _ => fail!(ErrorKind::Currency, "unsupported Binance pair: {}", pair),
@@ -69,7 +66,7 @@ impl BinanceSource {
     }
 
     /// `GET /api/v3/avgPrice` - get average price for Binance trading symbol
-    pub async fn avg_price_for_symbol(&self, symbol_name: SymbolName) -> Result<Decimal, Error> {
+    pub async fn avg_price_for_symbol(&self, symbol_name: SymbolName) -> Result<Price, Error> {
         let uri = Uri::builder()
             .scheme("https")
             .authority(API_HOST)
@@ -97,7 +94,7 @@ impl BinanceSource {
         let body = hyper::body::aggregate(http_response.into_body()).await?;
 
         let api_response: AvgPriceResponse = serde_json::from_reader(body.reader())?;
-        Ok(api_response.price)
+        Price::new(api_response.price)
     }
 }
 
@@ -208,10 +205,10 @@ impl FromStr for SymbolName {
     }
 }
 
-impl TryFrom<&Pair> for SymbolName {
+impl TryFrom<&TradingPair> for SymbolName {
     type Error = Error;
 
-    fn try_from(pair: &Pair) -> Result<Self, Error> {
+    fn try_from(pair: &TradingPair) -> Result<Self, Error> {
         // Strip slash from serialized pair
         pair.to_string()
             .chars()

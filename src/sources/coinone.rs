@@ -3,11 +3,8 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{AskBook, BidBook, Currency, Pair, Price, PriceQuantity, USER_AGENT};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook, USER_AGENT};
+use crate::{prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -34,7 +31,7 @@ impl CoinoneSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
@@ -95,7 +92,7 @@ impl AskBook for Response {
                 p.qty
                     .parse()
                     .map(|quantity| PriceQuantity {
-                        price: p.price.clone(),
+                        price: p.price,
                         quantity,
                     })
                     .map_err(Into::into)
@@ -113,7 +110,7 @@ impl BidBook for Response {
                 p.qty
                     .parse()
                     .map(|quantity| PriceQuantity {
-                        price: p.price.clone(),
+                        price: p.price,
                         quantity,
                     })
                     .map_err(Into::into)
