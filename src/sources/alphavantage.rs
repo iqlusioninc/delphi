@@ -2,8 +2,8 @@
 //! <https://www.alphavantage.co/>
 //!
 
-use super::{Pair, Price, USER_AGENT};
-use crate::error::Error;
+use super::USER_AGENT;
+use crate::{Error, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -65,7 +65,7 @@ impl AlphavantageSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         let params = AlphavantageParams {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),

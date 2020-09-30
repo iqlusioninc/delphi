@@ -2,11 +2,8 @@
 //! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::{AskBook, BidBook, Pair, Price, PriceQuantity, USER_AGENT};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook, USER_AGENT};
+use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -35,7 +32,7 @@ impl GopaxSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI, pair.0, pair.1);
         dbg!(&uri);
 

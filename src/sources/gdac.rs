@@ -1,11 +1,8 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::{AskBook, BidBook, Pair, Price, PriceQuantity};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook};
+use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -39,7 +36,7 @@ impl GdacSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Quote, Error> {
         let uri = format!(
             "{}/public/orderbook?pair={}",
             BASE_URI_V4,
@@ -104,7 +101,7 @@ impl AskBook for Quote {
                 p.volume
                     .parse()
                     .map(|quantity| PriceQuantity {
-                        price: p.price.clone(),
+                        price: p.price,
                         quantity,
                     })
                     .map_err(Into::into)
@@ -122,7 +119,7 @@ impl BidBook for Quote {
                 p.volume
                     .parse()
                     .map(|quantity| PriceQuantity {
-                        price: p.price.clone(),
+                        price: p.price,
                         quantity,
                     })
                     .map_err(Into::into)

@@ -6,7 +6,17 @@
 pub mod application;
 pub mod commands;
 pub mod config;
+pub mod currency;
 pub mod error;
 pub mod networks;
 pub mod prelude;
+pub mod price;
 pub mod sources;
+pub mod trading_pair;
+
+pub use self::{
+    currency::Currency,
+    error::{Error, ErrorKind},
+    price::{Price, PriceQuantity},
+    trading_pair::TradingPair,
+};
