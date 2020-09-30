@@ -117,7 +117,8 @@ pub struct RealtimeCurrencyExchangeRate {
     #[serde(rename = "4. To_Currency Name")]
     to_currency_name: String,
     #[serde(rename = "5. Exchange Rate")]
-    exchange_rate: String,
+    /// Quote of the exchange rate Price
+    pub exchange_rate: Price,
     #[serde(rename = "6. Last Refreshed")]
     timestamp: String,
     #[serde(rename = "7. Time Zone")]
