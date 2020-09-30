@@ -96,7 +96,7 @@ impl Denom {
 
                 luna_sgd.rescale(18);
 
-                Ok(stdtx::Decimal::try_from(krw_sgd)?)
+                Ok(stdtx::Decimal::try_from(luna_sgd)?)
             }
 
             _ => Ok(stdtx::Decimal::from(-1i8)),

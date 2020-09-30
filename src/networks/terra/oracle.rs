@@ -120,7 +120,7 @@ struct OracleState {
     /// Previously unrevealed votes
     unrevealed_votes: Vec<stdtx::Msg>,
 
-    /// Alphavantage Configuration 
+    /// Alphavantage Configuration
     // Configuration paramters that are going to be used in async request hanlders
     // need to be cloned into the Oracle State. Other configuration parameters should follow this pattern.
     alphavantage_config: AlphavantageConfig,
