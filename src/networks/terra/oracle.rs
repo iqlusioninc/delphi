@@ -1,6 +1,8 @@
 //! Terra exchange rate oracle
 
 use super::{denom::Denom, msg::MsgExchangeRateVote, CHAIN_ID, GAS_AMOUNT, MEMO, SCHEMA};
+use crate::application::app_config;
+use crate::config::AlphavantageConfig;
 use crate::prelude::*;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
@@ -14,7 +16,13 @@ pub struct ExchangeRateOracle(Arc<Mutex<OracleState>>);
 impl ExchangeRateOracle {
     /// Create a new [`ExchangeRateOracle`]
     pub fn new(feeder: stdtx::Address, validator: stdtx::Address) -> Self {
-        let state = OracleState::new(feeder, validator);
+        let alphavantage_config = app_config()
+            .source
+            .alphavantage
+            .clone()
+            .expect("no AlphaVantage config");
+
+        let state = OracleState::new(feeder, validator, alphavantage_config);
         ExchangeRateOracle(Arc::new(Mutex::new(state)))
     }
 
@@ -64,7 +72,10 @@ impl ExchangeRateOracle {
         msgs.append(&mut state.unrevealed_votes);
 
         for denom in Denom::kinds() {
-            let exchange_rate = match denom.get_exchange_rate().await {
+            let exchange_rate = match denom
+                .get_exchange_rate(state.alphavantage_config.clone())
+                .await
+            {
                 Ok(rate) => rate,
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
@@ -108,15 +119,23 @@ struct OracleState {
 
     /// Previously unrevealed votes
     unrevealed_votes: Vec<stdtx::Msg>,
+
+    /// Alphavantage Configuration
+    alphavantage_config: AlphavantageConfig,
 }
 
 impl OracleState {
     /// Initialize oracle state
-    fn new(feeder: stdtx::Address, validator: stdtx::Address) -> Self {
+    fn new(
+        feeder: stdtx::Address,
+        validator: stdtx::Address,
+        alphavantage_config: AlphavantageConfig,
+    ) -> Self {
         Self {
             unrevealed_votes: vec![],
             feeder,
             validator,
+            alphavantage_config,
         }
     }
 }

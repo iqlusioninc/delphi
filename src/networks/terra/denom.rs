@@ -1,6 +1,6 @@
 //! Exchange rate denominations
 
-use crate::application::app_config;
+use crate::config::AlphavantageConfig;
 use crate::error::Error;
 use crate::sources::gdac::GdacSource;
 use crate::sources::midpoint;
@@ -42,7 +42,10 @@ impl Denom {
     }
 
     /// Get the exchange rate for this [`Denom`]
-    pub async fn get_exchange_rate(self) -> Result<stdtx::Decimal, Error> {
+    pub async fn get_exchange_rate(
+        self,
+        alphavantage_config: AlphavantageConfig,
+    ) -> Result<stdtx::Decimal, Error> {
         match self {
             Denom::UKRW => {
                 // Source: CoinOne
@@ -73,16 +76,9 @@ impl Denom {
 
             Denom::UMNT => {
                 // Source: AlphaVantage
-                let alphavantage_response = AlphavantageSource::new(
-                    app_config()
-                        .source
-                        .alphavantage
-                        .clone()
-                        .expect("no AlphaVantage config")
-                        .apikey,
-                )
-                .trading_pairs(&Pair(Currency::Krw, Currency::Other("SGD".to_owned())))
-                .await?;
+                let alphavantage_response = AlphavantageSource::new(alphavantage_config.apikey)
+                    .trading_pairs(&Pair(Currency::Krw, Currency::Other("SGD".to_owned())))
+                    .await?;
 
                 // Source: CoinOne
                 let coinone_response = CoinoneSource::new()
@@ -91,12 +87,15 @@ impl Denom {
                 // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
 
-                let krw_sgd = coinone_midpoint.0 * alphavantage_response.realtime_currency_exchange_rate.exchange_rate.0;
+                let krw_sgd = coinone_midpoint.0
+                    * alphavantage_response
+                        .realtime_currency_exchange_rate
+                        .exchange_rate
+                        .0;
                 dbg!(krw_sgd);
 
                 Ok(stdtx::Decimal::try_from(krw_sgd)?)
-               
-            },
+            }
 
             _ => Ok(stdtx::Decimal::from(-1i8)),
         }
