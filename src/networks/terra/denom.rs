@@ -22,7 +22,7 @@ pub enum Denom {
     /// Korean Wan
     UKRW,
 
-    /// Singaporean Dollar
+    /// Mongolian Tugrik
     UMNT,
 
     /// IMF Special Drawing Rights
@@ -93,10 +93,7 @@ impl Denom {
             Denom::UMNT => {
                 // Source: AlphaVantage
                 let alphavantage_response = AlphavantageSource::new(alphavantage_config.apikey)
-                    .trading_pairs(&TradingPair(
-                        Currency::Krw,
-                        Currency::Other("SGD".to_owned()),
-                    ))
+                    .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt))
                     .await?;
 
                 // Source: CoinOne
@@ -106,17 +103,17 @@ impl Denom {
                 // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
 
-                let mut luna_sgd = Decimal::from(
+                let mut luna_mnt = Decimal::from(
                     coinone_midpoint
                         * alphavantage_response
                             .realtime_currency_exchange_rate
                             .exchange_rate,
                 );
-                dbg!(luna_sgd);
+                dbg!(luna_mnt);
 
-                luna_sgd.rescale(18);
+                luna_mnt.rescale(18);
 
-                Ok(luna_sgd.try_into()?)
+                Ok(luna_mnt.try_into()?)
             }
 
             Denom::UUSD => {

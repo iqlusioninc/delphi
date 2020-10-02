@@ -52,6 +52,9 @@ pub enum Currency {
     /// IMF Special Drawing Rights
     Sdr,
 
+    /// Mongolian Tugrik
+    Mnt,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -74,6 +77,7 @@ impl Display for Currency {
             Currency::Usdt => "USDT",
             Currency::Other(other) => other.as_ref(),
             Currency::Sdr => "SDR",
+            Currency::Mnt => "MNT",
         })
     }
 }
@@ -135,6 +139,7 @@ impl Currency {
             Currency::Gbp => "N/A".to_string(),
             Currency::Usdc => "N/A".to_string(),
             Currency::Usdt => "N/A".to_string(),
+            Currency::Mnt => "N/A".to_string(),
         }
     }
 }
