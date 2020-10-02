@@ -1,11 +1,11 @@
 //! Dunamu Source Provider (v0.4 API)
 //! <https://www.dunamu.com/>
 
-use super::{Currency, Pair, Price};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
+use crate::{Currency, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -39,7 +39,7 @@ impl DunamuSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         if pair.0 != Currency::Krw && pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }

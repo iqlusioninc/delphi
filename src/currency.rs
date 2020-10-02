@@ -49,6 +49,9 @@ pub enum Currency {
     /// Tether USDT stablecoin
     Usdt,
 
+    /// IMF Special Drawing Rights
+    Sdr,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -70,6 +73,7 @@ impl Display for Currency {
             Currency::Usdc => "USDC",
             Currency::Usdt => "USDT",
             Currency::Other(other) => other.as_ref(),
+            Currency::Sdr => "SDR",
         })
     }
 }
@@ -109,5 +113,28 @@ impl<'de> Deserialize<'de> for Currency {
 impl Serialize for Currency {
     fn serialize<S: ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.to_string().serialize(serializer)
+    }
+}
+
+impl Currency {
+    ///Long name for IMF csv
+    pub fn imf_long_name(&self) -> String {
+        match self {
+            Currency::Krw => "Korean won".to_string(),
+            Currency::Usd => "U.S. dollar".to_string(),
+            Currency::Luna => "N/A".to_string(),
+            Currency::Sdr => "SDR".to_string(),
+            Currency::Other(other) => other.to_string(),
+            Currency::Atom => "N/A".to_string(),
+            Currency::Bnb => "N/A".to_string(),
+            Currency::Bkrw => "N/A".to_string(),
+            Currency::Btc => "N/A".to_string(),
+            Currency::Busd => "N/A".to_string(),
+            Currency::Eth => "N/A".to_string(),
+            Currency::Eur => "N/A".to_string(),
+            Currency::Gbp => "N/A".to_string(),
+            Currency::Usdc => "N/A".to_string(),
+            Currency::Usdt => "N/A".to_string(),
+        }
     }
 }

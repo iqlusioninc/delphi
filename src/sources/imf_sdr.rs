@@ -1,11 +1,11 @@
 //! IMF SDR Source Provider
 //! <https://www.imf.org/>
 
-use super::{Currency, Pair, Price};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
+use crate::{Currency, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use csv;
 use hyper::{
@@ -92,8 +92,8 @@ impl ImfSDRSource {
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
-        if pair.1 != Currency::SDR {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
+        if pair.1 != Currency::Sdr {
             fail!(ErrorKind::Currency, "trading pair must be with IMF SDR");
         }
 
