@@ -7,7 +7,6 @@ use crate::{
 };
 use crate::{Currency, Price, TradingPair};
 use bytes::buf::ext::BufExt;
-use csv;
 use hyper::{
     client::{Client, HttpConnector},
     header, Body, Request,
@@ -50,30 +49,20 @@ impl IMFSDRRow {
     /// Best price is the most recent price. Use
     fn response_from_best_price(&self) -> Option<Response> {
         if let Some(ref price) = self.price_4 {
-            return Some(Response {
-                price: price.clone(),
-            });
+            return Some(Response { price: *price });
         }
         if let Some(ref price) = self.price_3 {
-            return Some(Response {
-                price: price.clone(),
-            });
+            return Some(Response { price: *price });
         }
         if let Some(ref price) = self.price_2 {
-            return Some(Response {
-                price: price.clone(),
-            });
+            return Some(Response { price: *price });
         }
 
         if let Some(ref price) = self.price_1 {
-            return Some(Response {
-                price: price.clone(),
-            });
+            return Some(Response { price: *price });
         }
         if let Some(ref price) = self.price_0 {
-            return Some(Response {
-                price: price.clone(),
-            });
+            return Some(Response { price: *price });
         }
 
         None
@@ -85,9 +74,7 @@ impl ImfSDRSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder()
-                .keep_alive(true)
-                .build(HttpsConnector::new()),
+            http_client: Client::builder().build(HttpsConnector::new()),
         }
     }
 
@@ -153,7 +140,8 @@ impl ImfSDRSource {
 /// Provides a single price point for a currency pair based extracted data
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response {
-    price: Price,
+    /// Price
+    pub price: Price,
 }
 
 impl TryFrom<IMFSDRRow> for Response {

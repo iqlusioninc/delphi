@@ -6,7 +6,7 @@ use crate::{
     error::Error,
     sources::{
         alphavantage::AlphavantageSource, binance::BinanceSource, coinone::CoinoneSource,
-        gdac::GdacSource, midpoint,
+        gdac::GdacSource, imf_sdr::ImfSDRSource, midpoint,
     },
     trading_pair::TradingPair,
 };
@@ -135,7 +135,28 @@ impl Denom {
                 Ok(luna_usd.try_into()?)
             }
 
-            _ => Ok(stdtx::Decimal::from(-1i8)),
+            Denom::USDR => {
+                //Source IMF_SDR
+                let imf_sdr_response = ImfSDRSource::new()
+                    .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr))
+                    .await
+                    .unwrap();
+
+                // Source: CoinOne
+                let coinone_response = CoinoneSource::new()
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
+                    .await?;
+
+                let coinone_midpoint = midpoint(&coinone_response)?;
+
+                let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
+
+                dbg!(luna_sdr);
+
+                luna_sdr.rescale(18);
+
+                Ok(luna_sdr.try_into()?)
+            }
         }
     }
 }
