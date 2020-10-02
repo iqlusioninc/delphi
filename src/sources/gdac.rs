@@ -1,11 +1,8 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::{Pair, Price};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook};
+use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -34,14 +31,12 @@ impl GdacSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder()
-                .keep_alive(true)
-                .build(HttpsConnector::new()),
+            http_client: Client::builder().build(HttpsConnector::new()),
         }
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Quote, Error> {
         let uri = format!(
             "{}/public/orderbook?pair={}",
             BASE_URI_V4,
@@ -95,6 +90,42 @@ pub struct Quote {
 
     /// Bid price
     pub bid: Vec<PricePoint>,
+}
+
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Quote {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.ask
+            .iter()
+            .map(|p| {
+                p.volume
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price,
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Quote {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.bid
+            .iter()
+            .map(|p| {
+                p.volume
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price,
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
 }
 
 /// Prices and associated volumes

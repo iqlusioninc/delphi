@@ -3,11 +3,8 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{Currency, Pair, Price};
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook, USER_AGENT};
+use crate::{prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -19,9 +16,6 @@ use serde::{Deserialize, Serialize};
 /// Base URI for requests to the Coinone API
 pub const BASE_URI: &str = "https://api.coinone.co.kr/";
 
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
-
 /// Source provider for Coinone
 pub struct CoinoneSource {
     http_client: Client<HttpsConnector<HttpConnector>>,
@@ -32,14 +26,12 @@ impl CoinoneSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder()
-                .keep_alive(true)
-                .build(HttpsConnector::new()),
+            http_client: Client::builder().build(HttpsConnector::new()),
         }
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
@@ -89,6 +81,42 @@ pub struct Response {
 
     /// Bid prices
     pub bid: Vec<PricePoint>,
+}
+
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Response {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.ask
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price,
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Response {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        self.bid
+            .iter()
+            .map(|p| {
+                p.qty
+                    .parse()
+                    .map(|quantity| PriceQuantity {
+                        price: p.price,
+                        quantity,
+                    })
+                    .map_err(Into::into)
+            })
+            .collect()
+    }
 }
 
 /// Prices and associated volumes

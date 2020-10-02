@@ -15,9 +15,7 @@ mod version;
 
 use self::{start::StartCmd, version::VersionCmd};
 use crate::config::DelphiConfig;
-use abscissa_core::{
-    config::Override, Command, Configurable, FrameworkError, Help, Options, Runnable,
-};
+use abscissa_core::{Command, Configurable, Help, Options, Runnable};
 use std::path::PathBuf;
 
 /// Delphi Configuration Filename
@@ -52,18 +50,6 @@ impl Configurable<DelphiConfig> for DelphiCmd {
             Some(filename)
         } else {
             None
-        }
-    }
-
-    /// Apply changes to the config after it's been loaded, e.g. overriding
-    /// values in a config file using command-line options.
-    ///
-    /// This can be safely deleted if you don't want to override config
-    /// settings from command-line options.
-    fn process_config(&self, config: DelphiConfig) -> Result<DelphiConfig, FrameworkError> {
-        match self {
-            DelphiCmd::Start(cmd) => cmd.override_config(config),
-            _ => Ok(config),
         }
     }
 }

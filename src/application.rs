@@ -1,4 +1,4 @@
-//! Delphi Abscissa Application
+//! Delphi Application
 
 use crate::{commands::DelphiCmd, config::DelphiConfig};
 use abscissa_core::{
@@ -77,20 +77,13 @@ impl Application for DelphiApp {
     }
 
     /// Register all components used by this application.
-    ///
-    /// If you would like to add additional components to your application
-    /// beyond the default ones provided by the framework, this is the place
-    /// to do so.
     fn register_components(&mut self, command: &Self::Cmd) -> Result<(), FrameworkError> {
-        let components = self.framework_components(command)?;
+        let mut components = self.framework_components(command)?;
+        components.push(Box::new(abscissa_tokio::TokioComponent::new()?));
         self.state.components.register(components)
     }
 
     /// Post-configuration lifecycle callback.
-    ///
-    /// Called regardless of whether config is loaded to indicate this is the
-    /// time in app lifecycle when configuration would be loaded if
-    /// possible.
     fn after_config(&mut self, config: Self::Cfg) -> Result<(), FrameworkError> {
         // Configure components
         self.state.components.after_config(&config)?;

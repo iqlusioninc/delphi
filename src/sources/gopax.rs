@@ -1,25 +1,21 @@
 //! GOPAX Source Provider
-//! <https://www.gopax.com/API/>
+//! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::Pair;
-use crate::{
-    error::{Error, ErrorKind},
-    prelude::*,
-};
+use super::{AskBook, BidBook, USER_AGENT};
+use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
     header, Body, Request,
 };
 use hyper_rustls::HttpsConnector;
-use serde::{Deserialize, Serialize};
+use rust_decimal::Decimal;
+use serde::{de, Deserialize, Serialize};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Base URI for requests to the GOPAX API
 pub const BASE_URI: &str = "https://api.gopax.co.kr";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// Source provider for GOPAX
 pub struct GopaxSource {
@@ -31,14 +27,12 @@ impl GopaxSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder()
-                .keep_alive(true)
-                .build(HttpsConnector::new()),
+            http_client: Client::builder().build(HttpsConnector::new()),
         }
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &Pair) -> Result<Quote, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
         let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI, pair.0, pair.1);
         dbg!(&uri);
 
@@ -66,16 +60,20 @@ impl GopaxSource {
             fail!(ErrorKind::Source, "got {:?} error status", status)
         }
 
-        match serde_json::from_reader(body.reader())? {
-            Response::Success(quote) => Ok(quote),
-            Response::Error { errormsg } => fail!(ErrorKind::Source, errormsg),
-        }
+        serde_json::from_reader(body.reader()).map_err(|e| {
+            format_err!(
+                ErrorKind::Source,
+                "couldn't parse api.gopax.co.kr response: {}",
+                e
+            )
+            .into()
+        })
     }
 }
 
 /// Quoted prices as sourced from the order book
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Quote {
+pub struct Response {
     /// Sequence
     pub sequence: u64,
 
@@ -86,16 +84,70 @@ pub struct Quote {
     pub ask: Vec<PricePoint>,
 }
 
+///This trait returns a vector of ask prices and quantities
+impl AskBook for Response {
+    fn asks(&self) -> Result<Vec<PriceQuantity>, Error> {
+        Ok(self
+            .ask
+            .iter()
+            .map(|p| PriceQuantity {
+                price: Price::new(p.price).unwrap(),
+                quantity: p.volume,
+            })
+            .collect())
+    }
+}
+
+///This trait returns a vector of bid prices and quantities
+impl BidBook for Response {
+    fn bids(&self) -> Result<Vec<PriceQuantity>, Error> {
+        Ok(self
+            .bid
+            .iter()
+            .map(|p| PriceQuantity {
+                price: Price::new(p.price).unwrap(),
+                quantity: p.volume,
+            })
+            .collect())
+    }
+}
 /// Prices and associated volumes
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PricePoint(String, f64, f64);
+pub struct PricePoint {
+    /// Id
+    pub id: String,
 
-/// Error responses
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-enum Response {
-    Success(Quote),
-    Error { errormsg: String },
+    /// Price
+    #[serde(deserialize_with = "deserialize_decimal")]
+    pub price: Decimal,
+
+    /// Volume
+    #[serde(deserialize_with = "deserialize_decimal")]
+    pub volume: Decimal,
+
+    /// Timestamp
+    #[serde(deserialize_with = "deserialize_timestamp")]
+    pub timestamp: SystemTime,
+}
+
+/// Deserialize decimal value
+fn deserialize_decimal<'de, D>(deserializer: D) -> Result<Decimal, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    // TODO: avoid floating point/string conversions
+    let value = f64::deserialize(deserializer)?;
+    value.to_string().parse().map_err(de::Error::custom)
+}
+
+/// Deserialize timestamp value
+fn deserialize_timestamp<'de, D>(deserializer: D) -> Result<SystemTime, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    String::deserialize(deserializer)
+        .and_then(|s| s.parse().map_err(de::Error::custom))
+        .map(|unix_secs| UNIX_EPOCH + Duration::from_secs(unix_secs))
 }
 
 #[cfg(test)]

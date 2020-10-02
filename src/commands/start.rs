@@ -1,43 +1,47 @@
-//! `start` subcommand - example of how to write a subcommand
+//! `start` subcommand
 
-/// App-local prelude includes `app_reader()`/`app_writer()`/`app_config()`
-/// accessors along with logging macros. Customize as you see fit.
-use crate::prelude::*;
+use crate::{application::APPLICATION, networks::terra};
+use abscissa_core::{prelude::*, Command, Options, Runnable};
+use std::process;
+use warp::Filter;
 
-use crate::config::DelphiConfig;
-use abscissa_core::{config, Command, FrameworkError, Options, Runnable};
+/// Feeder address
+pub const FEEDER_ADDR: &str = "terra1t9et8wjeh8d0ewf4lldchterxsmhpcgg5auy47";
+
+/// Validator address
+pub const VALIDATOR_ADDR: &str = "terravaloper1grgelyng2v6v3t8z87wu3sxgt9m5s03x2mfyu7";
 
 /// `start` subcommand
-///
-/// The `Options` proc macro generates an option parser based on the struct
-/// definition, and is defined in the `gumdrop` crate. See their documentation
-/// for a more comprehensive example:
-///
-/// <https://docs.rs/gumdrop/>
 #[derive(Command, Debug, Options)]
-pub struct StartCmd {
-    /// To whom are we saying hello?
-    #[options(free)]
-    recipient: Vec<String>,
-}
+pub struct StartCmd {}
 
 impl Runnable for StartCmd {
     /// Start the application.
     fn run(&self) {
-        let config = app_config();
-        println!("Hello, {}!", &config.hello.recipient);
-    }
-}
+        abscissa_tokio::run(&APPLICATION, async {
+            // TODO(tarcieri): configure listen addr/port from config file
+            let listen_addr = [127, 0, 0, 1];
+            let listen_port = 23456;
 
-impl config::Override<DelphiConfig> for StartCmd {
-    // Process the given command line options, overriding settings from
-    // a configuration file using explicit flags taken from command-line
-    // arguments.
-    fn override_config(&self, mut config: DelphiConfig) -> Result<DelphiConfig, FrameworkError> {
-        if !self.recipient.is_empty() {
-            config.hello.recipient = self.recipient.join(" ");
-        }
+            // TODO(tarcieri): load feeder/validator from config file
+            let feeder = stdtx::Address::from_bech32(FEEDER_ADDR).unwrap().1;
+            let validator = stdtx::Address::from_bech32(VALIDATOR_ADDR).unwrap().1;
 
-        Ok(config)
+            let terra_oracle = terra::ExchangeRateOracle::new(feeder, validator);
+            let terra_oracle_filter = warp::any().map(move || terra_oracle.clone());
+
+            let app = warp::post()
+                .and(warp::path("oracles"))
+                .and(warp::path("terra"))
+                .and(warp::path::end())
+                .and(terra_oracle_filter.clone())
+                .and_then(terra::ExchangeRateOracle::handle_request);
+
+            warp::serve(app).run((listen_addr, listen_port)).await;
+        })
+        .unwrap_or_else(|e| {
+            status_err!("executor exited with error: {}", e);
+            process::exit(1);
+        });
     }
 }

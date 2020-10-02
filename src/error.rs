@@ -108,3 +108,9 @@ impl From<rust_decimal::Error> for Error {
         ErrorKind::Parse.context(err).into()
     }
 }
+
+impl From<stdtx::Error> for Error {
+    fn from(err: stdtx::Error) -> Error {
+        Context::new(ErrorKind::Parse, Some(err.into())).into()
+    }
+}
