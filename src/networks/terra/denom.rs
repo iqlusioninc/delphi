@@ -5,7 +5,8 @@ use crate::{
     currency::Currency,
     error::Error,
     sources::{
-        alphavantage::AlphavantageSource, coinone::CoinoneSource, gdac::GdacSource, midpoint,
+        alphavantage::AlphavantageSource, binance::BinanceSource, coinone::CoinoneSource,
+        gdac::GdacSource, midpoint,
     },
     trading_pair::TradingPair,
 };
@@ -70,14 +71,23 @@ impl Denom {
                 let gdac_midpoint = midpoint(&gdac_response)?;
                 dbg!(&gdac_midpoint);
 
-                //Midpoint avg for all sources
-                let mut midpoint_avg = Decimal::from((coinone_midpoint + gdac_midpoint) / 2);
-                dbg!(&midpoint_avg);
+                // Source: Binance
+                let binance_response = BinanceSource::new()
+                    .approx_price_for_pair(&"LUNA/KRW".parse().unwrap())
+                    .await
+                    .unwrap();
 
-                dbg!(&midpoint_avg, midpoint_avg.scale());
-                midpoint_avg.rescale(18);
-                dbg!(&midpoint_avg, midpoint_avg.scale());
-                Ok(midpoint_avg.try_into()?)
+                dbg!(&binance_response);
+
+                //Midpoint avg for all sources
+                let mut luna_krw =
+                    Decimal::from((coinone_midpoint + gdac_midpoint + binance_response) / 3);
+                dbg!(&luna_krw);
+
+                dbg!(&luna_krw, luna_krw.scale());
+                luna_krw.rescale(18);
+                dbg!(&luna_krw, luna_krw.scale());
+                Ok(luna_krw.try_into()?)
             }
 
             Denom::UMNT => {
@@ -107,6 +117,22 @@ impl Denom {
                 luna_sgd.rescale(18);
 
                 Ok(luna_sgd.try_into()?)
+            }
+
+            Denom::UUSD => {
+                // Source: Binance
+                let binance_response = BinanceSource::new()
+                    .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
+                    .await
+                    .unwrap();
+
+                let mut luna_usd: Decimal = binance_response.into();
+
+                dbg!(luna_usd);
+
+                luna_usd.rescale(18);
+
+                Ok(luna_usd.try_into()?)
             }
 
             _ => Ok(stdtx::Decimal::from(-1i8)),
