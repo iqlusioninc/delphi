@@ -1,9 +1,15 @@
 //! Terra exchange rate oracle
 
-use super::{denom::Denom, msg::MsgExchangeRateVote, GAS_AMOUNT, MEMO, SCHEMA};
-use crate::application::app_config;
-use crate::config::{AlphavantageConfig, TerraConfig};
-use crate::prelude::*;
+use super::{
+    denom::Denom,
+    msg::{self, MsgAggregateExchangeRateVote},
+    GAS_AMOUNT, MEMO, SCHEMA,
+};
+use crate::{
+    application::app_config,
+    config::{AlphavantageConfig, TerraConfig},
+    prelude::*,
+};
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
 use tokio::sync::Mutex;
@@ -75,44 +81,46 @@ impl ExchangeRateOracle {
     /// Get oracle vote messages
     async fn get_vote_msgs(&self) -> Vec<stdtx::Msg> {
         let mut state = self.0.lock().await;
-
-        // Move all previously unrevealed votes into the result
-        let mut msgs = vec![];
-        msgs.append(&mut state.unrevealed_votes);
+        let mut exchange_rates = msg::ExchangeRates::new();
 
         for denom in Denom::kinds() {
-            let exchange_rate = match denom
+            match denom
                 .get_exchange_rate(state.alphavantage_config.clone())
                 .await
             {
-                Ok(rate) => rate,
+                Ok(rate) => exchange_rates.add(*denom, rate).expect("duplicate denom"),
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
                     continue;
                 }
             };
-
-            let vote_msg = MsgExchangeRateVote {
-                denom: *denom,
-                exchange_rate,
-                salt: MsgExchangeRateVote::random_salt(),
-                feeder: state.feeder,
-                validator: state.validator,
-            };
-
-            let prevote_msg_stdtx = vote_msg
-                .prevote()
-                .to_stdtx_msg()
-                .expect("can't serialize vote as stdtx");
-
-            msgs.push(prevote_msg_stdtx);
-
-            let vote_msg_stdtx = vote_msg
-                .to_stdtx_msg()
-                .expect("can't serialize vote as stdtx");
-
-            state.unrevealed_votes.push(vote_msg_stdtx);
         }
+
+        dbg!(&exchange_rates);
+
+        // Move all previously unrevealed votes into the result
+        let mut msgs = vec![];
+        msgs.append(&mut state.unrevealed_votes);
+
+        let vote_msg = MsgAggregateExchangeRateVote {
+            exchange_rates,
+            salt: MsgAggregateExchangeRateVote::random_salt(),
+            feeder: state.feeder,
+            validator: state.validator,
+        };
+
+        let prevote_msg_stdtx = vote_msg
+            .prevote()
+            .to_stdtx_msg()
+            .expect("can't serialize vote as stdtx");
+
+        msgs.push(prevote_msg_stdtx);
+
+        let vote_msg_stdtx = vote_msg
+            .to_stdtx_msg()
+            .expect("can't serialize vote as stdtx");
+
+        state.unrevealed_votes.push(vote_msg_stdtx);
 
         msgs
     }

@@ -17,7 +17,7 @@ use std::{
 };
 
 /// Denomination
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Denom {
     /// Korean Wan
     UKRW,
