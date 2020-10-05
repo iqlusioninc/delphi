@@ -1,8 +1,8 @@
 //! Terra exchange rate oracle
 
-use super::{denom::Denom, msg::MsgExchangeRateVote, CHAIN_ID, GAS_AMOUNT, MEMO, SCHEMA};
+use super::{denom::Denom, msg::MsgExchangeRateVote, GAS_AMOUNT, MEMO, SCHEMA};
 use crate::application::app_config;
-use crate::config::AlphavantageConfig;
+use crate::config::{AlphavantageConfig, TerraConfig};
 use crate::prelude::*;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
@@ -22,7 +22,9 @@ impl ExchangeRateOracle {
             .clone()
             .expect("no AlphaVantage config");
 
-        let state = OracleState::new(feeder, validator, alphavantage_config);
+        let terra_config = app_config().network.terra.clone().expect("no Terra config");
+
+        let state = OracleState::new(feeder, validator, alphavantage_config, terra_config);
         ExchangeRateOracle(Arc::new(Mutex::new(state)))
     }
 
@@ -36,6 +38,7 @@ impl ExchangeRateOracle {
     /// ```
     pub async fn handle_request(self) -> Result<impl warp::Reply, Infallible> {
         let started_at = Instant::now();
+        let chain_id = self.get_chain_id().await;
         let msgs = self.get_vote_msgs().await;
 
         let msg_json = msgs
@@ -44,7 +47,7 @@ impl ExchangeRateOracle {
             .collect::<Vec<_>>();
 
         let tx = json!({
-            "chain_id": CHAIN_ID,
+            "chain_id": chain_id,
             "fee": stdtx::StdFee::for_gas(GAS_AMOUNT),
             "memo": MEMO,
             "msgs": msg_json,
@@ -63,8 +66,14 @@ impl ExchangeRateOracle {
         ))
     }
 
+    /// Get the chain ID
+    async fn get_chain_id(&self) -> String {
+        let state = self.0.lock().await;
+        state.terra_config.chain_id.clone()
+    }
+
     /// Get oracle vote messages
-    async fn get_vote_msgs(self) -> Vec<stdtx::Msg> {
+    async fn get_vote_msgs(&self) -> Vec<stdtx::Msg> {
         let mut state = self.0.lock().await;
 
         // Move all previously unrevealed votes into the result
@@ -121,9 +130,12 @@ struct OracleState {
     unrevealed_votes: Vec<stdtx::Msg>,
 
     /// Alphavantage Configuration
-    // Configuration paramters that are going to be used in async request hanlders
+    // Configuration parameters that are going to be used in async request handlers
     // need to be cloned into the Oracle State. Other configuration parameters should follow this pattern.
     alphavantage_config: AlphavantageConfig,
+
+    /// Terra network configuration
+    terra_config: TerraConfig,
 }
 
 impl OracleState {
@@ -132,12 +144,14 @@ impl OracleState {
         feeder: stdtx::Address,
         validator: stdtx::Address,
         alphavantage_config: AlphavantageConfig,
+        terra_config: TerraConfig,
     ) -> Self {
         Self {
             unrevealed_votes: vec![],
             feeder,
             validator,
             alphavantage_config,
+            terra_config,
         }
     }
 }
