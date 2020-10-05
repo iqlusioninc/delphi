@@ -3,8 +3,10 @@
 pub mod alphavantage;
 pub mod binance;
 pub mod coinone;
+pub mod dunamu;
 pub mod gdac;
 pub mod gopax;
+pub mod imf_sdr;
 
 use crate::{Error, Price, PriceQuantity};
 use rust_decimal::Decimal;
