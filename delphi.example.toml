@@ -1,4 +1,7 @@
 # Example Delphi configuration file
 
+[network.terra]
+chain_id = "columbus-4"
+
 [source]
 alphavantage = {apikey = "api key goes here"}
