@@ -27,8 +27,8 @@ fields = [
 [[definition]]
 type_name = "oracle/MsgAggregateExchangeRateVote"
 fields = [
-    { name = "exchange_rates", type = "string"},
     { name = "salt", type = "string" },
+    { name = "exchange_rates", type = "string"},
     { name = "feeder", type = "sdk.AccAddress" },
     { name = "validator", type = "sdk.ValAddress" },
 ]
