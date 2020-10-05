@@ -22,7 +22,7 @@ pub enum Denom {
     /// Korean Wan
     UKRW,
 
-    /// Singaporean Dollar
+    /// Mongolian Tugrik
     UMNT,
 
     /// IMF Special Drawing Rights
@@ -92,31 +92,43 @@ impl Denom {
 
             Denom::UMNT => {
                 // Source: AlphaVantage
-                let alphavantage_response = AlphavantageSource::new(alphavantage_config.apikey)
-                    .trading_pairs(&TradingPair(
-                        Currency::Krw,
-                        Currency::Other("SGD".to_owned()),
-                    ))
+                let alphavantage_response_usd =
+                    AlphavantageSource::new(alphavantage_config.apikey.clone())
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt))
+                        .await?;
+
+                let alphavantage_response_krw = AlphavantageSource::new(alphavantage_config.apikey)
+                    .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt))
                     .await?;
+
+                // Source: Binance
+                let binance_response = BinanceSource::new()
+                    .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
+                    .await
+                    .unwrap();
 
                 // Source: CoinOne
                 let coinone_response = CoinoneSource::new()
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                // dbg!(&coinone_response);
                 let coinone_midpoint = midpoint(&coinone_response)?;
 
-                let mut luna_sgd = Decimal::from(
-                    coinone_midpoint
-                        * alphavantage_response
+                let mut luna_mnt = Decimal::from(
+                    (binance_response
+                        * alphavantage_response_usd
                             .realtime_currency_exchange_rate
-                            .exchange_rate,
+                            .exchange_rate
+                        + coinone_midpoint
+                            * alphavantage_response_krw
+                                .realtime_currency_exchange_rate
+                                .exchange_rate)
+                        / 2,
                 );
-                dbg!(luna_sgd);
+                dbg!(luna_mnt);
 
-                luna_sgd.rescale(18);
+                luna_mnt.rescale(18);
 
-                Ok(luna_sgd.try_into()?)
+                Ok(luna_mnt.try_into()?)
             }
 
             Denom::UUSD => {

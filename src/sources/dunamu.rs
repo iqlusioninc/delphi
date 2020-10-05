@@ -5,7 +5,7 @@ use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
-use crate::{Currency, Price, TradingPair};
+use crate::{Currency, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector},
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 //https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD
 
-/// Base URI for requests to the Coinone API
+/// Base URI for requests to the Dunamu API
 pub const BASE_URI: &str = "https://quotation-api-cdn.dunamu.com";
 
 /// User-Agent to send in HTTP request
@@ -73,68 +73,47 @@ impl DunamuSource {
 pub type Response = Vec<ResponseElement>;
 /// API response entity
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ResponseElement {
     code: String,
-    #[serde(rename = "currencyCode")]
     currency_code: String,
-    #[serde(rename = "currencyName")]
     currency_name: String,
     country: String,
     name: String,
     date: String,
     time: String,
-    #[serde(rename = "recurrenceCount")]
     recurrence_count: i64,
-    #[serde(rename = "basePrice")]
-    base_price: Price,
-    #[serde(rename = "openingPrice")]
-    opening_price: Price,
-    #[serde(rename = "highPrice")]
-    high_price: Price,
-    #[serde(rename = "lowPrice")]
-    low_price: Price,
+    base_price: f64,
+    opening_price: f64,
+    high_price: f64,
+    low_price: f64,
     change: String,
-    #[serde(rename = "changePrice")]
-    change_price: Price,
-    #[serde(rename = "cashBuyingPrice")]
-    cash_buying_price: Price,
-    #[serde(rename = "cashSellingPrice")]
-    cash_selling_price: Price,
-    #[serde(rename = "ttBuyingPrice")]
-    tt_buying_price: Price,
-    #[serde(rename = "ttSellingPrice")]
-    tt_selling_price: Price,
-    #[serde(rename = "tcBuyingPrice")]
+    change_price: f64,
+    cash_buying_price: f64,
+    cash_selling_price: f64,
+    tt_buying_price: f64,
+    tt_selling_price: f64,
     tc_buying_price: Option<serde_json::Value>,
-    #[serde(rename = "fcSellingPrice")]
     fc_selling_price: Option<serde_json::Value>,
-    #[serde(rename = "exchangeCommission")]
-    exchange_commission: Price,
-    #[serde(rename = "usDollarRate")]
-    us_dollar_rate: Price,
+    exchange_commission: f64,
+    us_dollar_rate: f64,
     #[serde(rename = "high52wPrice")]
-    high52_w_price: Price,
+    high52_w_price: f64,
     #[serde(rename = "high52wDate")]
     high52_w_date: String,
     #[serde(rename = "low52wPrice")]
-    low52_w_price: Price,
+    low52_w_price: f64,
     #[serde(rename = "low52wDate")]
     low52_w_date: String,
-    #[serde(rename = "currencyUnit")]
     currency_unit: i64,
     provider: String,
     timestamp: i64,
     id: i64,
-    #[serde(rename = "createdAt")]
     created_at: String,
-    #[serde(rename = "modifiedAt")]
     modified_at: String,
-    #[serde(rename = "changeRate")]
-    change_rate: Price,
-    #[serde(rename = "signedChangePrice")]
-    signed_change_price: Price,
-    #[serde(rename = "signedChangeRate")]
-    signed_change_rate: Price,
+    change_rate: f64,
+    signed_change_price: f64,
+    signed_change_rate: f64,
 }
 
 #[cfg(test)]
