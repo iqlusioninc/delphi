@@ -10,6 +10,29 @@ val_prefix = "terravaloper"
 # <https://docs.terra.money/dev/spec-oracle.html>
 #
 
+# MsgAggregateExchangeRatePrevote
+# (NOTE: presently undocumented. See example below)
+# <https://finder.terra.money/columbus-4/tx/6E2E83CF8B2F287CDBFD6C3716A65F6D3235EAEF233198289688B2A65609A71A>
+[[definition]]
+type_name = "oracle/MsgAggregateExchangeRatePrevote"
+fields = [
+    { name = "hash",  type = "string" },
+    { name = "feeder", type = "sdk.AccAddress" },
+    { name = "validator", type = "sdk.ValAddress" },
+]
+
+# MsgAggregateExchangeRateVote
+# (NOTE: presently undocumented. See example below)
+# <https://finder.terra.money/columbus-4/tx/6E2E83CF8B2F287CDBFD6C3716A65F6D3235EAEF233198289688B2A65609A71A>
+[[definition]]
+type_name = "oracle/MsgAggregateExchangeRateVote"
+fields = [
+    { name = "exchange_rates", type = "string"},
+    { name = "salt", type = "string" },
+    { name = "feeder", type = "sdk.AccAddress" },
+    { name = "validator", type = "sdk.ValAddress" },
+]
+
 # MsgExchangeRatePrevote
 # <https://docs.terra.money/dev/spec-oracle.html#msgexchangerateprevote>
 [[definition]]
