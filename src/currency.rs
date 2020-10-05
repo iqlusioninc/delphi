@@ -78,7 +78,6 @@ impl Display for Currency {
             Currency::Other(other) => other.as_ref(),
             Currency::Sdr => "SDR",
             Currency::Mnt => "MNT",
-
         })
     }
 }
@@ -141,7 +140,6 @@ impl Currency {
             Currency::Usdc => "N/A".to_string(),
             Currency::Usdt => "N/A".to_string(),
             Currency::Mnt => "N/A".to_string(),
-
         }
     }
 }
