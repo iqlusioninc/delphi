@@ -76,42 +76,26 @@ pub type Response = Vec<ResponseElement>;
 #[serde(rename_all = "camelCase")]
 pub struct ResponseElement {
     code: String,
-    #[serde(rename = "currencyCode")]
     currency_code: String,
-    #[serde(rename = "currencyName")]
     currency_name: String,
     country: String,
     name: String,
     date: String,
     time: String,
-    #[serde(rename = "recurrenceCount")]
     recurrence_count: i64,
-    #[serde(rename = "basePrice")]
     base_price: f64,
-    #[serde(rename = "openingPrice")]
     opening_price: f64,
-    #[serde(rename = "highPrice")]
     high_price: f64,
-    #[serde(rename = "lowPrice")]
     low_price: f64,
     change: String,
-    #[serde(rename = "changePrice")]
     change_price: f64,
-    #[serde(rename = "cashBuyingPrice")]
     cash_buying_price: f64,
-    #[serde(rename = "cashSellingPrice")]
     cash_selling_price: f64,
-    #[serde(rename = "ttBuyingPrice")]
     tt_buying_price: f64,
-    #[serde(rename = "ttSellingPrice")]
     tt_selling_price: f64,
-    #[serde(rename = "tcBuyingPrice")]
     tc_buying_price: Option<serde_json::Value>,
-    #[serde(rename = "fcSellingPrice")]
     fc_selling_price: Option<serde_json::Value>,
-    #[serde(rename = "exchangeCommission")]
     exchange_commission: f64,
-    #[serde(rename = "usDollarRate")]
     us_dollar_rate: f64,
     #[serde(rename = "high52wPrice")]
     high52_w_price: f64,
@@ -121,20 +105,14 @@ pub struct ResponseElement {
     low52_w_price: f64,
     #[serde(rename = "low52wDate")]
     low52_w_date: String,
-    #[serde(rename = "currencyUnit")]
     currency_unit: i64,
     provider: String,
     timestamp: i64,
     id: i64,
-    #[serde(rename = "createdAt")]
     created_at: String,
-    #[serde(rename = "modifiedAt")]
     modified_at: String,
-    #[serde(rename = "changeRate")]
     change_rate: f64,
-    #[serde(rename = "signedChangePrice")]
     signed_change_price: f64,
-    #[serde(rename = "signedChangeRate")]
     signed_change_rate: f64,
 }
 
