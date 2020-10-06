@@ -10,6 +10,7 @@ use crate::{
     config::{AlphavantageConfig, TerraConfig},
     prelude::*,
 };
+use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
 use tokio::sync::Mutex;
@@ -83,12 +84,15 @@ impl ExchangeRateOracle {
         let mut state = self.0.lock().await;
         let mut exchange_rates = msg::ExchangeRates::new();
 
+        let mut exchange_rate_fut = vec![];
         for denom in Denom::kinds() {
-            match denom
-                .get_exchange_rate(state.alphavantage_config.clone())
-                .await
-            {
-                Ok(rate) => exchange_rates.add(*denom, rate).expect("duplicate denom"),
+            exchange_rate_fut.push(denom.get_exchange_rate(state.alphavantage_config.clone()))
+        }
+        let rates = join_all(exchange_rate_fut).await;
+
+        for (rate, denom) in rates.iter().zip(Denom::kinds()) {
+            match rate {
+                Ok(rate) => exchange_rates.add(*denom, *rate).expect("duplicate denom"),
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
                     continue;

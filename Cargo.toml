@@ -31,6 +31,7 @@ thiserror = "1"
 tokio = { version = "0.2", features = ["rt-threaded", "macros"] }
 warp = "0.2"
 csv = "1.1"
+futures = "0.3"
 
 [dev-dependencies]
 abscissa_core = { version = "0.5", features = ["testing"] }
