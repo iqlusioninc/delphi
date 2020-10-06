@@ -1,13 +1,9 @@
 //! Exchange rate denominations
 
 use crate::{
-    config::AlphavantageConfig,
     currency::Currency,
     error::Error,
-    sources::{
-        alphavantage::AlphavantageSource, binance::BinanceSource, coinone::CoinoneSource,
-        gdac::GdacSource, imf_sdr::ImfSDRSource, midpoint,
-    },
+    sources::{midpoint, Sources},
     trading_pair::TradingPair,
 };
 use rust_decimal::Decimal;
@@ -49,14 +45,12 @@ impl Denom {
     }
 
     /// Get the exchange rate for this [`Denom`]
-    pub async fn get_exchange_rate(
-        self,
-        alphavantage_config: AlphavantageConfig,
-    ) -> Result<stdtx::Decimal, Error> {
+    pub async fn get_exchange_rate(self, sources: &Sources) -> Result<stdtx::Decimal, Error> {
         match self {
             Denom::UKRW => {
                 // Source: CoinOne
-                let coinone_response = CoinoneSource::new()
+                let coinone_response = sources
+                    .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&coinone_response);
@@ -64,7 +58,8 @@ impl Denom {
                 dbg!(&coinone_midpoint);
 
                 // Source: GDAC
-                let gdac_response = GdacSource::new()
+                let gdac_response = sources
+                    .gdac
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&gdac_response);
@@ -72,7 +67,8 @@ impl Denom {
                 dbg!(&gdac_midpoint);
 
                 // Source: Binance
-                let binance_response = BinanceSource::new()
+                let binance_response = sources
+                    .binance
                     .approx_price_for_pair(&"LUNA/KRW".parse().unwrap())
                     .await
                     .unwrap();
@@ -92,23 +88,26 @@ impl Denom {
 
             Denom::UMNT => {
                 // Source: AlphaVantage
-                let alphavantage_response_usd =
-                    AlphavantageSource::new(alphavantage_config.apikey.clone())
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt))
-                        .await?;
+                let alphavantage_response_usd = sources
+                    .alphavantage
+                    .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt))
+                    .await?;
 
-                let alphavantage_response_krw = AlphavantageSource::new(alphavantage_config.apikey)
+                let alphavantage_response_krw = sources
+                    .alphavantage
                     .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt))
                     .await?;
 
                 // Source: Binance
-                let binance_response = BinanceSource::new()
+                let binance_response = sources
+                    .binance
                     .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
                     .await
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = CoinoneSource::new()
+                let coinone_response = sources
+                    .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 let coinone_midpoint = midpoint(&coinone_response)?;
@@ -133,7 +132,8 @@ impl Denom {
 
             Denom::UUSD => {
                 // Source: Binance
-                let binance_response = BinanceSource::new()
+                let binance_response = sources
+                    .binance
                     .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
                     .await
                     .unwrap();
@@ -149,13 +149,15 @@ impl Denom {
 
             Denom::USDR => {
                 //Source IMF_SDR
-                let imf_sdr_response = ImfSDRSource::new()
+                let imf_sdr_response = sources
+                    .imf_sdr
                     .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr))
                     .await
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = CoinoneSource::new()
+                let coinone_response = sources
+                    .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
 

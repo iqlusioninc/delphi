@@ -8,11 +8,79 @@ pub mod gdac;
 pub mod gopax;
 pub mod imf_sdr;
 
-use crate::{Error, Price, PriceQuantity};
+use self::{
+    alphavantage::AlphavantageSource, binance::BinanceSource, coinone::CoinoneSource,
+    dunamu::DunamuSource, gdac::GdacSource, gopax::GopaxSource, imf_sdr::ImfSDRSource,
+};
+use crate::{config::DelphiConfig, Error, Price, PriceQuantity};
 use rust_decimal::Decimal;
 
 /// User-Agent to send in HTTP request
 pub const USER_AGENT: &str = "iqlusion delphi";
+
+// TODO(shella): factor this into e.g. a common Tower service when we have 2+ oracles
+
+/// Terra oracle sources
+pub struct Sources {
+    /// AlphaVantage
+    /// <https://www.alphavantage.co/>
+    pub alphavantage: AlphavantageSource,
+
+    /// Binance
+    /// <https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md>
+    pub binance: BinanceSource,
+
+    /// CoinOne
+    /// <https://coinone.co.kr/>
+    pub coinone: CoinoneSource,
+
+    /// Dunamu
+    /// <https://dunamu.com/views/01_main.html>
+    pub dunamu: DunamuSource,
+
+    /// GDAC
+    /// <https://www.gdac.com/?locale=en_us>
+    pub gdac: GdacSource,
+
+    /// GOPAX
+    /// <https://www.gopax.co.id/API/>
+    pub gopax: GopaxSource,
+
+    /// IMF SDR
+    /// <https://www.imf.org/>
+    pub imf_sdr: ImfSDRSource,
+}
+
+impl Sources {
+    /// Initialize sources from config
+    pub fn new(config: &DelphiConfig) -> Self {
+        // TODO(tarcieri): support optionally enabling sources based on config
+        let alphavantage = AlphavantageSource::new(
+            &config
+                .source
+                .alphavantage
+                .as_ref()
+                .expect("missing alphavantage config")
+                .apikey,
+        );
+        let binance = BinanceSource::new();
+        let coinone = CoinoneSource::new();
+        let dunamu = DunamuSource::new();
+        let gdac = GdacSource::new();
+        let gopax = GopaxSource::new();
+        let imf_sdr = ImfSDRSource::new();
+
+        Sources {
+            alphavantage,
+            binance,
+            coinone,
+            dunamu,
+            gdac,
+            gopax,
+            imf_sdr,
+        }
+    }
+}
 
 ///This trait allows writing generic functions over ask orderbook from multiple sources
 pub trait AskBook {

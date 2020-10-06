@@ -57,10 +57,10 @@ impl AlphavantageParams {
 impl AlphavantageSource {
     /// Create a new Alphavantage source provider
     #[allow(clippy::new_without_default)]
-    pub fn new(apikey: String) -> Self {
+    pub fn new(apikey: impl Into<String>) -> Self {
         Self {
             http_client: Client::builder().build(HttpsConnector::new()),
-            apikey,
+            apikey: apikey.into(),
         }
     }
 
@@ -139,7 +139,7 @@ mod tests {
     async fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
         let _response = AlphavantageSource::new(
-            std::env::var("ALPHAVANTAGE_API")
+            &std::env::var("ALPHAVANTAGE_API")
                 .expect("Please set the ALPHAVANTAGE_API env variable"),
         )
         .trading_pairs(&pair)

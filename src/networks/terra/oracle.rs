@@ -5,11 +5,7 @@ use super::{
     msg::{self, MsgAggregateExchangeRateVote},
     GAS_AMOUNT, MEMO, SCHEMA,
 };
-use crate::{
-    application::app_config,
-    config::{AlphavantageConfig, TerraConfig},
-    prelude::*,
-};
+use crate::{application::app_config, config::TerraConfig, prelude::*, sources::Sources};
 use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
@@ -23,15 +19,13 @@ pub struct ExchangeRateOracle(Arc<Mutex<OracleState>>);
 impl ExchangeRateOracle {
     /// Create a new [`ExchangeRateOracle`]
     pub fn new(feeder: stdtx::Address, validator: stdtx::Address) -> Self {
-        let alphavantage_config = app_config()
-            .source
-            .alphavantage
-            .clone()
-            .expect("no AlphaVantage config");
+        let state = {
+            let config = app_config();
+            let sources = Sources::new(&config);
+            let terra_config = app_config().network.terra.clone().expect("no Terra config");
+            OracleState::new(feeder, validator, sources, terra_config)
+        };
 
-        let terra_config = app_config().network.terra.clone().expect("no Terra config");
-
-        let state = OracleState::new(feeder, validator, alphavantage_config, terra_config);
         ExchangeRateOracle(Arc::new(Mutex::new(state)))
     }
 
@@ -86,7 +80,7 @@ impl ExchangeRateOracle {
 
         let mut exchange_rate_fut = vec![];
         for denom in Denom::kinds() {
-            exchange_rate_fut.push(denom.get_exchange_rate(state.alphavantage_config.clone()))
+            exchange_rate_fut.push(denom.get_exchange_rate(&state.sources))
         }
         let rates = join_all(exchange_rate_fut).await;
 
@@ -138,16 +132,14 @@ struct OracleState {
     /// Validator address
     validator: stdtx::Address,
 
-    /// Previously unrevealed votes
-    unrevealed_votes: Vec<stdtx::Msg>,
-
-    /// Alphavantage Configuration
-    // Configuration parameters that are going to be used in async request handlers
-    // need to be cloned into the Oracle State. Other configuration parameters should follow this pattern.
-    alphavantage_config: AlphavantageConfig,
+    /// Sources
+    sources: Sources,
 
     /// Terra network configuration
     terra_config: TerraConfig,
+
+    /// Previously unrevealed votes
+    unrevealed_votes: Vec<stdtx::Msg>,
 }
 
 impl OracleState {
@@ -155,14 +147,14 @@ impl OracleState {
     fn new(
         feeder: stdtx::Address,
         validator: stdtx::Address,
-        alphavantage_config: AlphavantageConfig,
+        sources: Sources,
         terra_config: TerraConfig,
     ) -> Self {
         Self {
             unrevealed_votes: vec![],
             feeder,
             validator,
-            alphavantage_config,
+            sources,
             terra_config,
         }
     }
