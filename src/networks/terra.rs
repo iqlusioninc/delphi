@@ -9,9 +9,6 @@ pub use self::{denom::Denom, oracle::ExchangeRateOracle};
 
 use once_cell::sync::Lazy;
 
-/// Amount of gas to use when voting
-pub const GAS_AMOUNT: u64 = 200_000;
-
 /// Memo to include in transactions
 pub const MEMO: &str = concat!("delphi/", env!("CARGO_PKG_VERSION"));
 

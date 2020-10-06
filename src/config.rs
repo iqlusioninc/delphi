@@ -4,6 +4,11 @@
 //! application's configuration file and/or command-line options
 //! for specifying it.
 
+pub mod network;
+pub mod source;
+
+pub use self::{network::NetworkConfig, source::SourceConfig};
+
 use serde::{Deserialize, Serialize};
 
 /// Delphi Configuration
@@ -17,42 +22,4 @@ pub struct DelphiConfig {
     /// Source configuration
     #[serde(default)]
     pub source: SourceConfig,
-}
-
-/// Network/chain specific configuration
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct NetworkConfig {
-    /// Terra configuration
-    pub terra: Option<TerraConfig>,
-}
-
-/// Terra configuration
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct TerraConfig {
-    /// Terra chain id
-    pub chain_id: String,
-
-    /// Feeder address (Bech32)
-    pub feeder: String,
-
-    /// Validator address (Bech32)
-    pub validator: String,
-}
-
-/// Source Configuration
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct SourceConfig {
-    /// AlphaVantage
-    pub alphavantage: Option<AlphavantageConfig>,
-}
-
-/// AlphaVantage Configuration
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct AlphavantageConfig {
-    /// API key
-    pub apikey: String,
 }
