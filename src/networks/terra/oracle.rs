@@ -5,7 +5,7 @@ use super::{
     msg::{self, MsgAggregateExchangeRateVote},
     GAS_AMOUNT, MEMO, SCHEMA,
 };
-use crate::{application::app_config, config::TerraConfig, prelude::*, sources::Sources};
+use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources};
 use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
@@ -18,12 +18,10 @@ pub struct ExchangeRateOracle(Arc<Mutex<OracleState>>);
 
 impl ExchangeRateOracle {
     /// Create a new [`ExchangeRateOracle`]
-    pub fn new(feeder: stdtx::Address, validator: stdtx::Address) -> Self {
+    pub fn new() -> Self {
         let state = {
             let config = app_config();
-            let sources = Sources::new(&config);
-            let terra_config = app_config().network.terra.clone().expect("no Terra config");
-            OracleState::new(feeder, validator, sources, terra_config)
+            OracleState::new(&config)
         };
 
         ExchangeRateOracle(Arc::new(Mutex::new(state)))
@@ -70,7 +68,7 @@ impl ExchangeRateOracle {
     /// Get the chain ID
     async fn get_chain_id(&self) -> String {
         let state = self.0.lock().await;
-        state.terra_config.chain_id.clone()
+        state.chain_id.clone()
     }
 
     /// Get oracle vote messages
@@ -124,8 +122,17 @@ impl ExchangeRateOracle {
     }
 }
 
+impl Default for ExchangeRateOracle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Inner (synchronized) oracle state
 struct OracleState {
+    /// Chain ID
+    chain_id: String,
+
     /// Feeder address
     feeder: stdtx::Address,
 
@@ -135,27 +142,35 @@ struct OracleState {
     /// Sources
     sources: Sources,
 
-    /// Terra network configuration
-    terra_config: TerraConfig,
-
     /// Previously unrevealed votes
     unrevealed_votes: Vec<stdtx::Msg>,
 }
 
 impl OracleState {
     /// Initialize oracle state
-    fn new(
-        feeder: stdtx::Address,
-        validator: stdtx::Address,
-        sources: Sources,
-        terra_config: TerraConfig,
-    ) -> Self {
+    fn new(config: &DelphiConfig) -> Self {
+        let terra_config = config
+            .network
+            .terra
+            .as_ref()
+            .expect("missing [networks.terra] config");
+
+        let feeder = stdtx::Address::from_bech32(&terra_config.feeder)
+            .expect("invalid terra feeder config")
+            .1;
+
+        let validator = stdtx::Address::from_bech32(&terra_config.validator)
+            .expect("invalid terra validator config")
+            .1;
+
+        let sources = Sources::new(config);
+
         Self {
-            unrevealed_votes: vec![],
+            chain_id: terra_config.chain_id.to_owned(),
             feeder,
             validator,
             sources,
-            terra_config,
+            unrevealed_votes: vec![],
         }
     }
 }
