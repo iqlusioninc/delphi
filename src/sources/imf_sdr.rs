@@ -48,23 +48,21 @@ struct IMFSDRRow {
 impl IMFSDRRow {
     /// Best price is the most recent price. Use
     fn response_from_best_price(&self) -> Option<Response> {
-        if let Some(ref price) = self.price_4 {
+        if let Some(ref price) = self.price_0 {
             return Some(Response { price: *price });
         }
-        if let Some(ref price) = self.price_3 {
+        if let Some(ref price) = self.price_1 {
             return Some(Response { price: *price });
         }
         if let Some(ref price) = self.price_2 {
             return Some(Response { price: *price });
         }
-
-        if let Some(ref price) = self.price_1 {
+        if let Some(ref price) = self.price_3 {
             return Some(Response { price: *price });
         }
-        if let Some(ref price) = self.price_0 {
+        if let Some(ref price) = self.price_4 {
             return Some(Response { price: *price });
         }
-
         None
     }
 }
