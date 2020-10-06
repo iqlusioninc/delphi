@@ -11,10 +11,13 @@ use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap as Map,
+    convert::TryFrom,
     fmt::{self, Display},
 };
 use stdtx::{Address, Decimal};
-use subtle_encoding::hex;
+
+/// Truncated SHA-256 hash to include in a pre-vote
+pub type Hash = [u8; 20];
 
 /// Terra Oracle Aggregate Vote Message (`oracle/MsgAggregateExchangeRateVote`)
 /// <https://docs.terra.money/dev/spec-oracle.html#msgaggregateexchangeratevote>
@@ -61,7 +64,7 @@ impl MsgAggregateExchangeRateVote {
     }
 
     /// Generate hex encoded truncated SHA-256 of vote. Needed to generate prevote
-    fn generate_vote_hash(&self) -> String {
+    fn generate_vote_hash(&self) -> Hash {
         let data = format!(
             "{}:{}:{}",
             self.salt,
@@ -71,11 +74,7 @@ impl MsgAggregateExchangeRateVote {
 
         // Tendermint truncated sha256
         let digest = Sha256::digest(data.as_bytes());
-        let mut bytes = [0u8; 20];
-        bytes.copy_from_slice(&digest[..20]);
-
-        // Should always succeed.
-        String::from_utf8(hex::encode(bytes)).unwrap()
+        Hash::try_from(&digest[..20]).unwrap()
     }
 }
 
@@ -84,7 +83,7 @@ impl MsgAggregateExchangeRateVote {
 #[derive(Clone, Debug)]
 pub struct MsgAggregateExchangeRatePrevote {
     /// Commitment to future vote
-    pub hash: String,
+    pub hash: Hash,
 
     /// Origin Address for vote
     pub feeder: Address,
@@ -98,7 +97,7 @@ impl MsgAggregateExchangeRatePrevote {
     pub fn to_stdtx_msg(&self) -> Result<stdtx::Msg, Error> {
         Ok(
             stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
-                .string("hash", &self.hash)?
+                .bytes("hash", self.hash.as_ref())?
                 .acc_address("feeder", self.feeder)?
                 .val_address("validator", self.validator)?
                 .to_msg(),
