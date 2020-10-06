@@ -33,6 +33,12 @@ pub struct NetworkConfig {
 pub struct TerraConfig {
     /// Terra chain id
     pub chain_id: String,
+
+    /// Feeder address (Bech32)
+    pub feeder: String,
+
+    /// Validator address (Bech32)
+    pub validator: String,
 }
 
 /// Source Configuration

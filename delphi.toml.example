@@ -1,0 +1,10 @@
+# Example Delphi configuration file
+
+[network.terra]
+chain_id = "columbus-4"
+feeder = "terra1..."
+validator = "terravaloper1..."
+
+[source.alphavantage]
+# Get API key here (quick-and-simple form): https://www.alphavantage.co/support/#api-key
+apikey = "api key goes here"
