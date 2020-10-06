@@ -4,6 +4,7 @@
 chain_id = "columbus-4"
 feeder = "terra1..."
 validator = "terravaloper1..."
+fee = { denom = "ukrw", amount = "356100", gas = "200000" }
 
 [source.alphavantage]
 # Get API key here (quick-and-simple form): https://www.alphavantage.co/support/#api-key

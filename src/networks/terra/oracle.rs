@@ -3,12 +3,13 @@
 use super::{
     denom::Denom,
     msg::{self, MsgAggregateExchangeRateVote},
-    GAS_AMOUNT, MEMO, SCHEMA,
+    MEMO, SCHEMA,
 };
 use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources};
 use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
+use stdtx::{amino_types::StdFee, Address};
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
@@ -47,7 +48,7 @@ impl ExchangeRateOracle {
 
         let tx = json!({
             "chain_id": chain_id,
-            "fee": stdtx::StdFee::for_gas(GAS_AMOUNT),
+            "fee": self.oracle_fee().await,
             "memo": MEMO,
             "msgs": msg_json,
         });
@@ -120,6 +121,12 @@ impl ExchangeRateOracle {
 
         msgs
     }
+
+    /// Compute the oracle fee
+    pub async fn oracle_fee(&self) -> StdFee {
+        let state = self.0.lock().await;
+        state.fee.clone()
+    }
 }
 
 impl Default for ExchangeRateOracle {
@@ -134,10 +141,13 @@ struct OracleState {
     chain_id: String,
 
     /// Feeder address
-    feeder: stdtx::Address,
+    feeder: Address,
 
     /// Validator address
-    validator: stdtx::Address,
+    validator: Address,
+
+    /// Fee
+    fee: StdFee,
 
     /// Sources
     sources: Sources,
@@ -155,20 +165,22 @@ impl OracleState {
             .as_ref()
             .expect("missing [networks.terra] config");
 
-        let feeder = stdtx::Address::from_bech32(&terra_config.feeder)
+        let feeder = Address::from_bech32(&terra_config.feeder)
             .expect("invalid terra feeder config")
             .1;
 
-        let validator = stdtx::Address::from_bech32(&terra_config.validator)
+        let validator = Address::from_bech32(&terra_config.validator)
             .expect("invalid terra validator config")
             .1;
 
+        let fee = StdFee::from(&terra_config.fee);
         let sources = Sources::new(config);
 
         Self {
             chain_id: terra_config.chain_id.to_owned(),
             feeder,
             validator,
+            fee,
             sources,
             unrevealed_votes: vec![],
         }

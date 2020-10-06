@@ -2,14 +2,17 @@
 
 use crate::{
     currency::Currency,
-    error::Error,
+    error::{Error, ErrorKind},
+    prelude::*,
     sources::{midpoint, Sources},
     trading_pair::TradingPair,
 };
 use rust_decimal::Decimal;
+use serde::{de, ser, Deserialize, Serialize};
 use std::{
     convert::TryInto,
     fmt::{self, Display},
+    str::FromStr,
 };
 
 /// Denomination
@@ -178,5 +181,33 @@ impl Denom {
 impl Display for Denom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
+    }
+}
+
+impl FromStr for Denom {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Error> {
+        match s.to_ascii_lowercase().as_ref() {
+            "ukrw" => Ok(Denom::UKRW),
+            "umnt" => Ok(Denom::UMNT),
+            "usdr" => Ok(Denom::USDR),
+            "uusd" => Ok(Denom::UUSD),
+            _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Denom {
+    fn deserialize<D: de::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use de::Error;
+        let s = String::deserialize(deserializer)?;
+        s.parse().map_err(D::Error::custom)
+    }
+}
+
+impl Serialize for Denom {
+    fn serialize<S: ser::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.to_string().serialize(serializer)
     }
 }
