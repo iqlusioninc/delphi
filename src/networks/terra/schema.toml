@@ -16,7 +16,7 @@ val_prefix = "terravaloper"
 [[definition]]
 type_name = "oracle/MsgAggregateExchangeRatePrevote"
 fields = [
-    { name = "hash",  type = "string" },
+    { name = "hash",  type = "bytes" },
     { name = "feeder", type = "sdk.AccAddress" },
     { name = "validator", type = "sdk.ValAddress" },
 ]
