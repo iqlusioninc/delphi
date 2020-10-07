@@ -56,7 +56,6 @@ impl AlphavantageParams {
 
 impl AlphavantageSource {
     /// Create a new Alphavantage source provider
-    #[allow(clippy::new_without_default)]
     pub fn new(apikey: impl Into<String>) -> Self {
         Self {
             http_client: Client::builder().build(HttpsConnector::new()),
