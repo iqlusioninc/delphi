@@ -3,9 +3,10 @@
 use crate::Error;
 use bytes::buf::ext::BufExt;
 use hyper::{
-    client::{Client, HttpConnector},
+    client::{Client, HttpConnector, ResponseFuture},
     header, Body, Request, Uri,
 };
+use hyper_proxy::{Intercept, Proxy, ProxyConnector};
 use hyper_rustls::HttpsConnector;
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
@@ -17,17 +18,51 @@ pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// HTTPS Client
 pub struct HttpsClient {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    inner: InnerClient,
     hostname: String,
 }
 
 impl HttpsClient {
-    /// Create a newHTTPS client
+    /// Create a new HTTPS client
     pub fn new(hostname: impl Into<String>) -> Self {
+        let client = Client::builder().build(HttpsConnector::new());
+
         Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
+            inner: InnerClient::Https(client),
             hostname: hostname.into(),
         }
+    }
+
+    /// Create a new HTTPS client which connects via a proxy
+    pub fn new_with_proxy(
+        hostname: &str,
+        proxy_host: &str,
+        proxy_port: u64,
+    ) -> Result<Self, Error> {
+        let proxy_uri = format!("http://{}:{}", proxy_host, proxy_port)
+            .parse()
+            .unwrap_or_else(|e| {
+                panic!(
+                    "error constructing proxy URI: {} (host:{}, port:{})",
+                    e, proxy_host, proxy_port
+                )
+            });
+
+        // TODO(tarcieri): proxy auth
+        let proxy = Proxy::new(Intercept::All, proxy_uri);
+
+        let connector = HttpsConnector::new();
+
+        let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap_or_else(|e| {
+            panic!("error initializing proxy URI: {}", e);
+        });
+
+        let client = Client::builder().build(proxy_connector);
+
+        Ok(Self {
+            inner: InnerClient::HttpsViaProxy(client),
+            hostname: hostname.to_owned(),
+        })
     }
 
     /// HTTP GET request that gets json
@@ -53,9 +88,23 @@ impl HttpsClient {
             );
         }
 
-        let response = self.http_client.request(request).await?;
+        let response = self.inner.request(request).await?;
         let body = hyper::body::aggregate(response.into_body()).await?;
         Ok(serde_json::from_reader(body.reader())?)
+    }
+}
+
+enum InnerClient {
+    Https(Client<HttpsConnector<HttpConnector>>),
+    HttpsViaProxy(Client<ProxyConnector<HttpsConnector<HttpConnector>>>),
+}
+
+impl InnerClient {
+    fn request(&self, req: Request<Body>) -> ResponseFuture {
+        match self {
+            Self::Https(client) => client.request(req),
+            Self::HttpsViaProxy(client) => client.request(req),
+        }
     }
 }
 
