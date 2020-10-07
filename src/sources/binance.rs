@@ -1,14 +1,8 @@
 //! Binance Source Provider
 //! <https://binance.com/>
 
-use super::USER_AGENT;
+use crate::https_client::{HttpsClient, Query};
 use crate::{prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request, Uri,
-};
-use hyper_rustls::HttpsConnector;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -23,14 +17,14 @@ pub const API_HOST: &str = "api.binance.com";
 
 /// Source provider for Binance
 pub struct BinanceSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 
 impl BinanceSource {
     /// Create a new Binance source provider
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
+            https_client: HttpsClient::new(API_HOST),
         }
     }
 
@@ -68,33 +62,13 @@ impl BinanceSource {
 
     /// `GET /api/v3/avgPrice` - get average price for Binance trading symbol
     pub async fn avg_price_for_symbol(&self, symbol_name: SymbolName) -> Result<Price, Error> {
-        let uri = Uri::builder()
-            .scheme("https")
-            .authority(API_HOST)
-            .path_and_query(format!("/api/v3/avgPrice?symbol={}", symbol_name).as_str())
-            .build()
-            .unwrap();
+        let mut query = Query::new();
+        query.add("symbol".to_owned(), symbol_name.to_string());
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let http_response = self.http_client.request(request).await?;
-        let body = hyper::body::aggregate(http_response.into_body()).await?;
-
-        let api_response: AvgPriceResponse = serde_json::from_reader(body.reader())?;
+        let api_response: AvgPriceResponse = self
+            .https_client
+            .get_json("/api/v3/avgPrice", &query)
+            .await?;
         Price::new(api_response.price)
     }
 }
