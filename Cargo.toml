@@ -2,7 +2,12 @@
 name        = "delphi"
 version     = "0.0.0"
 description = "Oracle feeder service (presently supporting Terra)"
-authors     = ["Tony Arcieri <tony@iqlusion.io>"]
+authors     = [
+    "Tony Arcieri <tony@iqlusion.io>",
+    "Kristi Põldsam <kristi@iqlusion.io>",
+    "Zaki Manian <zaki@iqlusion.io>",
+    "Shella Stephens <shella@iqlusion.io>"
+]
 license     = "Apache-2.0"
 repository  = "https://github.com/iqlusioninc/delphi"
 readme      = "README.md"
