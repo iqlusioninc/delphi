@@ -8,6 +8,7 @@ pub mod commands;
 pub mod config;
 pub mod currency;
 pub mod error;
+pub mod https_client;
 pub mod networks;
 pub mod prelude;
 pub mod price;
