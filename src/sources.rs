@@ -66,10 +66,10 @@ impl Sources {
         )?;
         let binance = BinanceSource::new(&config.https)?;
         let coinone = CoinoneSource::new(&config.https)?;
-        let dunamu = DunamuSource::new();
         let gdac = GdacSource::new(&config.https)?;
-        let gopax = GopaxSource::new();
-        let imf_sdr = ImfSDRSource::new();
+        let dunamu = DunamuSource::new(&config.https)?;
+        let gopax = GopaxSource::new(&config.https)?;
+        let imf_sdr = ImfSDRSource::new(&config.https)?;
 
         Ok(Sources {
             alphavantage,

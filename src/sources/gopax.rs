@@ -2,72 +2,45 @@
 //! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::{AskBook, BidBook, USER_AGENT};
-use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
+use super::{midpoint, AskBook, BidBook};
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+    Error, Price, PriceQuantity, TradingPair,
 };
-use hyper_rustls::HttpsConnector;
 use rust_decimal::Decimal;
 use serde::{de, Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Base URI for requests to the GOPAX API
-pub const BASE_URI: &str = "https://api.gopax.co.kr";
+pub const API_HOST: &str = "api.gopax.co.kr";
 
 /// Source provider for GOPAX
 pub struct GopaxSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 
 impl GopaxSource {
     /// Create a new GOPAX source provider
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
-        let uri = format!("{}/trading-pairs/{}-{}/book", BASE_URI, pair.0, pair.1);
-        dbg!(&uri);
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        let query = Query::new();
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.http_client.request(request).await?;
-        let status = response.status();
-        let body = hyper::body::aggregate(response.into_body()).await?;
-
-        if !status.is_success() {
-            fail!(ErrorKind::Source, "got {:?} error status", status)
-        }
-
-        serde_json::from_reader(body.reader()).map_err(|e| {
-            format_err!(
-                ErrorKind::Source,
-                "couldn't parse api.gopax.co.kr response: {}",
-                e
+        let api_response: Response = self
+            .https_client
+            .get_json(
+                &format!("/trading-pairs/{}-{}/book", pair.0, pair.1),
+                &query,
             )
-            .into()
-        })
+            .await?;
+
+        midpoint(&api_response)
     }
 }
 
@@ -169,9 +142,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let quote = block_on(GopaxSource::new().trading_pairs(&pair)).unwrap();
-        assert!(quote.ask.len() > 10);
-        assert!(quote.bid.len() > 10);
+        let _quote = block_on(
+            GopaxSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -179,7 +155,11 @@ mod tests {
     #[ignore]
     fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
-        let quote = block_on(GopaxSource::new().trading_pairs(&pair));
+        let quote = block_on(
+            GopaxSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        );
         assert!(quote.is_err());
     }
 }
