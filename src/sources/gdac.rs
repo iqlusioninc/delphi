@@ -1,14 +1,9 @@
 //! GDAC Source Provider (v0.4 API)
 //! <https://www.gdac.com/>
 
-use super::{AskBook, BidBook};
-use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
-};
-use hyper_rustls::HttpsConnector;
+use super::{midpoint, AskBook, BidBook};
+use crate::https_client::{HttpsClient, Query};
+use crate::{Error, Price, PriceQuantity, TradingPair};
 use serde::{de, Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
@@ -16,14 +11,11 @@ use std::{
 };
 
 /// Base URI for requests to the GDAC v0.4 API
-pub const BASE_URI_V4: &str = "https://partner.gdac.com/v0.4";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
+pub const API_HOST: &str = "partner.gdac.com";
 
 /// Source provider for GDAC
 pub struct GdacSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 
 impl GdacSource {
@@ -31,54 +23,20 @@ impl GdacSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
+            https_client: HttpsClient::new(API_HOST),
         }
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Quote, Error> {
-        let uri = format!(
-            "{}/public/orderbook?pair={}",
-            BASE_URI_V4,
-            pair.percent_encode()
-        );
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        let mut query = Query::new();
+        query.add("pair".to_owned(), pair.percent_encode());
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.http_client.request(request).await?;
-        let status = response.status();
-        let body = hyper::body::aggregate(response.into_body()).await?;
-
-        if !status.is_success() {
-            let error_response: ErrorResponse =
-                serde_json::from_reader(body.reader()).map_err(|e| {
-                    format_err!(
-                        ErrorKind::Source,
-                        "got {} error status with malformed body: {}",
-                        status,
-                        e
-                    )
-                })?;
-
-            let err = ErrorKind::Source.context(error_response.code);
-            return Err(err.into());
-        }
-
-        Ok(serde_json::from_reader(body.reader())?)
+        let api_response: Quote = self
+            .https_client
+            .get_json("/v0.4/public/orderbook", &query)
+            .await?;
+        midpoint(&api_response)
     }
 }
 
@@ -212,10 +170,7 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let quote = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
-        dbg!(&quote);
-        assert!(quote.ask.len() > 10);
-        assert!(quote.bid.len() > 10);
+        let _price = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -223,13 +178,9 @@ mod tests {
     #[ignore]
     fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
-        let quote_err = block_on(GdacSource::new().trading_pairs(&pair))
+
+        let _err = block_on(GdacSource::new().trading_pairs(&pair))
             .err()
             .unwrap();
-
-        use std::error::Error;
-        let err: &ErrorCode = quote_err.source().unwrap().downcast_ref().unwrap();
-
-        assert_eq!(err, &ErrorCode::InternalError);
     }
 }

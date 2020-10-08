@@ -4,7 +4,7 @@ use crate::{
     currency::Currency,
     error::{Error, ErrorKind},
     prelude::*,
-    sources::{midpoint, Sources},
+    sources::Sources,
     trading_pair::TradingPair,
 };
 use rust_decimal::Decimal;
@@ -59,12 +59,12 @@ impl Denom {
                 dbg!(&coinone_midpoint);
 
                 // Source: GDAC
-                let gdac_response = sources
+                let gdac_midpoint = sources
                     .gdac
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
                 // dbg!(&gdac_response);
-                let gdac_midpoint = midpoint(&gdac_response)?;
+                // let gdac_midpoint = midpoint(&gdac_response)?;
                 dbg!(&gdac_midpoint);
 
                 // Source: Binance
