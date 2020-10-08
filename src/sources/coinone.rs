@@ -3,22 +3,17 @@
 //!
 //! Only KRW pairs are supported.
 
-use super::{AskBook, BidBook, USER_AGENT};
+use super::{midpoint, AskBook, BidBook};
+use crate::https_client::{HttpsClient, Query};
 use crate::{prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
-};
-use hyper_rustls::HttpsConnector;
 use serde::{Deserialize, Serialize};
 
 /// Base URI for requests to the Coinone API
-pub const BASE_URI: &str = "https://api.coinone.co.kr/";
+pub const API_HOST: &str = "api.coinone.co.kr";
 
 /// Source provider for Coinone
 pub struct CoinoneSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 
 impl CoinoneSource {
@@ -26,37 +21,21 @@ impl CoinoneSource {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
+            https_client: HttpsClient::new(API_HOST),
         }
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
 
-        let uri = format!("{}/orderbook?currency={}", BASE_URI, pair.0);
+        let mut query = Query::new();
+        query.add("currency".to_owned(), pair.0.to_string());
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.http_client.request(request).await?;
-        let body = hyper::body::aggregate(response.into_body()).await?;
-        Ok(serde_json::from_reader(body.reader())?)
+        let api_response: Response = self.https_client.get_json("/orderbook", &query).await?;
+        midpoint(&api_response)
     }
 }
 
@@ -148,9 +127,7 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let response = block_on(CoinoneSource::new().trading_pairs(&pair)).unwrap();
-        assert!(response.ask.len() > 10);
-        assert!(response.bid.len() > 10);
+        let _price = block_on(CoinoneSource::new().trading_pairs(&pair)).unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair

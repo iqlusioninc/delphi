@@ -52,12 +52,10 @@ impl Denom {
         match self {
             Denom::UKRW => {
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                // dbg!(&coinone_response);
-                let coinone_midpoint = midpoint(&coinone_response)?;
                 dbg!(&coinone_midpoint);
 
                 // Source: GDAC
@@ -109,11 +107,10 @@ impl Denom {
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                let coinone_midpoint = midpoint(&coinone_response)?;
 
                 let mut luna_mnt = Decimal::from(
                     (binance_response
@@ -159,12 +156,10 @@ impl Denom {
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-
-                let coinone_midpoint = midpoint(&coinone_response)?;
 
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
 
