@@ -1,8 +1,12 @@
 //! Binance Source Provider
 //! <https://binance.com/>
 
-use crate::https_client::{HttpsClient, Query};
-use crate::{prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+    prelude::*,
+    Currency, Error, ErrorKind, Price, TradingPair,
+};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -22,10 +26,9 @@ pub struct BinanceSource {
 
 impl BinanceSource {
     /// Create a new Binance source provider
-    pub fn new() -> Self {
-        Self {
-            https_client: HttpsClient::new(API_HOST),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get the average price for the given pair, approximating prices for
@@ -70,12 +73,6 @@ impl BinanceSource {
             .get_json("/api/v3/avgPrice", &query)
             .await?;
         Price::new(api_response.price)
-    }
-}
-
-impl Default for BinanceSource {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -211,7 +208,7 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn avg_price_for_symbol() {
-        let binance = BinanceSource::new();
+        let binance = BinanceSource::new(&Default::default()).unwrap();
 
         let luna_bnb = binance
             .avg_price_for_symbol("LUNABNB".parse().unwrap())
@@ -245,7 +242,7 @@ mod tests {
     #[ignore]
     #[tokio::test]
     async fn approx_price_for_pair() {
-        let binance = BinanceSource::new();
+        let binance = BinanceSource::new(&Default::default()).unwrap();
 
         let luna_btc = binance
             .approx_price_for_pair(&"LUNA/BTC".parse().unwrap())

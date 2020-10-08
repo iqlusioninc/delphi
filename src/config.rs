@@ -4,10 +4,11 @@
 //! application's configuration file and/or command-line options
 //! for specifying it.
 
+pub mod https;
 pub mod network;
 pub mod source;
 
-pub use self::{network::NetworkConfig, source::SourceConfig};
+pub use self::{https::HttpsConfig, network::NetworkConfig, source::SourceConfig};
 
 use serde::{Deserialize, Serialize};
 
@@ -15,6 +16,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DelphiConfig {
+    /// HTTPS configuration
+    #[serde(default)]
+    pub https: HttpsConfig,
+
     /// Network configuration
     #[serde(default)]
     pub network: NetworkConfig,
