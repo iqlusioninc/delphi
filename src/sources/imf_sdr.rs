@@ -2,23 +2,23 @@
 //! <https://www.imf.org/>
 
 use crate::{
+    config::HttpsConfig,
     error::{Error, ErrorKind},
+    https_client::HttpsClient,
     prelude::*,
 };
 use crate::{Currency, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{
-    client::{Client, HttpConnector},
     header, Body, Request,
 };
-use hyper_rustls::HttpsConnector;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 //https://www.imf.org/external/np/fin/data/rms_five.aspx?tsvflag=Y"
 
 /// Base URI for requests to the Coinone API
-pub const BASE_URI: &str = "https://www.imf.org";
+pub const API_HOST: &str = "www.imf.org";
 
 /// User-Agent to send in HTTP request
 pub const USER_AGENT: &str = "iqlusion delphi";
@@ -26,7 +26,7 @@ pub const USER_AGENT: &str = "iqlusion delphi";
 /// The IMF returns tab seperated data is form that is designed to for
 
 pub struct ImfSDRSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 /// importing into Excel spreadsheets rather than being machine
 /// friendly.record. The TSV data has irregular structure.
@@ -70,10 +70,9 @@ impl IMFSDRRow {
 impl ImfSDRSource {
     /// Create a new Dunamu source provider
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get trading pairs
@@ -82,7 +81,10 @@ impl ImfSDRSource {
             fail!(ErrorKind::Currency, "trading pair must be with IMF SDR");
         }
 
-        let uri = format!("{}/external/np/fin/data/rms_five.aspx?tsvflag=Y", BASE_URI,);
+        let uri = format!(
+            "https://{}/external/np/fin/data/rms_five.aspx?tsvflag=Y",
+            API_HOST
+        );
 
         let mut request = Request::builder()
             .method("GET")
@@ -99,7 +101,7 @@ impl ImfSDRSource {
             );
         }
 
-        let response = self.http_client.request(request).await?;
+        let response = self.https_client.get(request).await?;
         let body = hyper::body::aggregate(response.into_body()).await?;
 
         let mut imf_sdr = csv::ReaderBuilder::new()
@@ -170,7 +172,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "KRW/SDR".parse().unwrap();
-        let quote = block_on(ImfSDRSource::new().trading_pairs(&pair)).unwrap();
+        let quote = block_on(
+            ImfSDRSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
         dbg!(&quote);
     }
 

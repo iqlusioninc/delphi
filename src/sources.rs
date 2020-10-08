@@ -68,7 +68,7 @@ impl Sources {
         let dunamu = DunamuSource::new();
         let gdac = GdacSource::new();
         let gopax = GopaxSource::new();
-        let imf_sdr = ImfSDRSource::new();
+        let imf_sdr = ImfSDRSource::new(&config.https)?;
 
         Ok(Sources {
             alphavantage,
