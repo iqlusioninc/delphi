@@ -111,14 +111,8 @@ impl Denom {
                     .await?;
 
                 let mut luna_mnt = Decimal::from(
-                    (binance_response
-                        * alphavantage_response_usd
-                            .realtime_currency_exchange_rate
-                            .exchange_rate
-                        + coinone_midpoint
-                            * alphavantage_response_krw
-                                .realtime_currency_exchange_rate
-                                .exchange_rate)
+                    (binance_response * alphavantage_response_usd
+                        + coinone_midpoint * alphavantage_response_krw)
                         / 2,
                 );
                 dbg!(luna_mnt);

@@ -2,22 +2,18 @@
 //! <https://www.alphavantage.co/>
 //!
 
-use super::USER_AGENT;
-use crate::{Error, Price, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request, Uri,
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
 };
-use hyper_rustls::HttpsConnector;
+use crate::{Error, Price, TradingPair};
 use serde::{Deserialize, Serialize};
+/// Hostname for AlphaVantage API
+pub const API_HOST: &str = "www.alphavantage.co";
 
-/// Base URI for requests to the Coinone API
-pub const BASE_URI: &str = "https://www.alphavantage.co/";
-
-/// Source provider for Alphavantage
+/// Source provider for AlphaVantage
 pub struct AlphavantageSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
     apikey: String,
 }
 
@@ -31,40 +27,29 @@ pub struct AlphavantageParams {
 
 impl AlphavantageParams {
     ///Convert params into url query parameters
-    pub fn to_request_uri(&self) -> Uri {
-        let query = [
-            ("function", &self.function),
-            ("from_currency", &self.from_currency),
-            ("to_currency", &self.to_currency),
-            ("apikey", &self.apikey),
-        ]
-        .iter()
-        .map(|(k, v)| format!("{}={}", k, v)) // TODO: add urlencoding
-        .collect::<Vec<_>>()
-        .join("&");
+    pub fn to_request_uri(&self) -> Query {
+        let mut query = Query::new();
+        query.add("function".to_owned(), self.function.to_string());
+        query.add("from_currency".to_owned(), self.from_currency.to_string());
+        query.add("to_currency".to_owned(), self.to_currency.to_string());
+        query.add("apikey".to_owned(), self.apikey.to_string());
 
-        let path_and_query = format!("/query?{}", query);
-
-        Uri::builder()
-            .scheme("https")
-            .authority("www.alphavantage.co")
-            .path_and_query(path_and_query.as_str())
-            .build()
-            .unwrap()
+        query
     }
 }
 
 impl AlphavantageSource {
     /// Create a new Alphavantage source provider
-    pub fn new(apikey: impl Into<String>) -> Self {
-        Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
+    pub fn new(apikey: impl Into<String>, config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self {
+            https_client,
             apikey: apikey.into(),
-        }
+        })
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
         let params = AlphavantageParams {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),
@@ -72,27 +57,9 @@ impl AlphavantageSource {
             apikey: self.apikey.clone(),
         };
 
-        let uri = params.to_request_uri();
-
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.http_client.request(request).await?;
-        let body = hyper::body::aggregate(response.into_body()).await?;
-        Ok(serde_json::from_reader(body.reader())?)
+        let query = params.to_request_uri();
+        let api_response: Response = self.https_client.get_json("/query", &query).await?;
+        Ok(api_response.realtime_currency_exchange_rate.exchange_rate)
     }
 }
 
@@ -140,7 +107,9 @@ mod tests {
         let _response = AlphavantageSource::new(
             &std::env::var("ALPHAVANTAGE_API")
                 .expect("Please set the ALPHAVANTAGE_API env variable"),
+            &Default::default(),
         )
+        .unwrap()
         .trading_pairs(&pair)
         .await
         .unwrap();
