@@ -4,7 +4,7 @@ use crate::{
     currency::Currency,
     error::{Error, ErrorKind},
     prelude::*,
-    sources::{midpoint, Sources},
+    sources::Sources,
     trading_pair::TradingPair,
 };
 use rust_decimal::Decimal;
@@ -52,21 +52,17 @@ impl Denom {
         match self {
             Denom::UKRW => {
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                // dbg!(&coinone_response);
-                let coinone_midpoint = midpoint(&coinone_response)?;
                 dbg!(&coinone_midpoint);
 
                 // Source: GDAC
-                let gdac_response = sources
+                let gdac_midpoint = sources
                     .gdac
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                // dbg!(&gdac_response);
-                let gdac_midpoint = midpoint(&gdac_response)?;
                 dbg!(&gdac_midpoint);
 
                 // Source: Binance
@@ -109,21 +105,14 @@ impl Denom {
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                let coinone_midpoint = midpoint(&coinone_response)?;
 
                 let mut luna_mnt = Decimal::from(
-                    (binance_response
-                        * alphavantage_response_usd
-                            .realtime_currency_exchange_rate
-                            .exchange_rate
-                        + coinone_midpoint
-                            * alphavantage_response_krw
-                                .realtime_currency_exchange_rate
-                                .exchange_rate)
+                    (binance_response * alphavantage_response_usd
+                        + coinone_midpoint * alphavantage_response_krw)
                         / 2,
                 );
                 dbg!(luna_mnt);
@@ -159,12 +148,10 @@ impl Denom {
                     .unwrap();
 
                 // Source: CoinOne
-                let coinone_response = sources
+                let coinone_midpoint = sources
                     .coinone
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-
-                let coinone_midpoint = midpoint(&coinone_response)?;
 
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
 

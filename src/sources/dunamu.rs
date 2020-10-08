@@ -1,71 +1,53 @@
 //! Dunamu Source Provider (v0.4 API)
 //! <https://www.dunamu.com/>
 
+use super::Price;
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+    Currency, TradingPair,
+};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
-use crate::{Currency, TradingPair};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
-};
-use hyper_rustls::HttpsConnector;
+
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 //https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD
 
 /// Base URI for requests to the Dunamu API
-pub const BASE_URI: &str = "https://quotation-api-cdn.dunamu.com";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
+pub const API_HOST: &str = "quotation-api-cdn.dunamu.com";
 
 /// Source provider for Dunamu
 pub struct DunamuSource {
-    http_client: Client<HttpsConnector<HttpConnector>>,
+    https_client: HttpsClient,
 }
 
 impl DunamuSource {
     /// Create a new Dunamu source provider
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            http_client: Client::builder().build(HttpsConnector::new()),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get trading pairs
-    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
+    pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
         if pair.0 != Currency::Krw && pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
 
-        let uri = format!(
-            "{}/v1/forex/recent?codes=FRX.{}{}",
-            BASE_URI, pair.0, pair.1
-        );
+        let mut query = Query::new();
+        query.add("codes", format!("FRX.{}{}", pair.0, pair.1));
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.http_client.request(request).await?;
-        let body = hyper::body::aggregate(response.into_body()).await?;
-        Ok(serde_json::from_reader(body.reader())?)
+        let api_response: Response = self
+            .https_client
+            .get_json("/v1/forex/recent", &query)
+            .await?;
+        let price: Decimal = api_response[0].base_price.to_string().parse()?;
+        Ok(Price::new(price)?)
     }
 }
 
@@ -135,9 +117,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
-        let response = block_on(DunamuSource::new().trading_pairs(&pair)).unwrap();
-
-        assert!(response.len() > 0);
+        let _response = block_on(
+            DunamuSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -147,8 +132,12 @@ mod tests {
         let pair = "N/A".parse().unwrap();
 
         // TODO(tarcieri): test 404 handling
-        let _err = block_on(DunamuSource::new().trading_pairs(&pair))
-            .err()
-            .unwrap();
+        let _err = block_on(
+            DunamuSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .err()
+        .unwrap();
     }
 }

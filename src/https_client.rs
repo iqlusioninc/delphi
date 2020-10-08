@@ -4,7 +4,7 @@ use crate::{config::HttpsConfig, Error, ErrorKind};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector, ResponseFuture},
-    header, Body, Request, Uri,
+    header, Body, Request, Response, Uri,
 };
 use hyper_proxy::{Intercept, Proxy, ProxyConnector};
 use hyper_rustls::HttpsConnector;
@@ -46,6 +46,11 @@ impl HttpsClient {
             inner,
             hostname: hostname.into(),
         })
+    }
+
+    /// exposes the ability to sent HTTP GET requests and return resoponses directly. Prefer get_json under most circumstances but useful for unsual apis
+    pub async fn get(&self, request: Request<Body>) -> Result<Response<Body>, hyper::error::Error> {
+        self.inner.request(request).await
     }
 
     /// HTTP GET request that gets json
