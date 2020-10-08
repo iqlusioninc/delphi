@@ -1,6 +1,6 @@
 //! HTTPS Client
 
-use crate::Error;
+use crate::{config::HttpsConfig, Error, ErrorKind};
 use bytes::buf::ext::BufExt;
 use hyper::{
     client::{Client, HttpConnector, ResponseFuture},
@@ -23,45 +23,28 @@ pub struct HttpsClient {
 }
 
 impl HttpsClient {
-    /// Create a new HTTPS client
-    pub fn new(hostname: impl Into<String>) -> Self {
-        let client = Client::builder().build(HttpsConnector::new());
+    /// Create a new HTTPS client using the provided configuration
+    pub fn new(hostname: impl Into<String>, config: &HttpsConfig) -> Result<Self, Error> {
+        let inner = match &config.proxy {
+            Some(proxy_uri) => {
+                // TODO(tarcieri): proxy auth
+                let proxy = Proxy::new(Intercept::All, proxy_uri.clone());
+                let connector = HttpsConnector::new();
+                let proxy_connector = ProxyConnector::from_proxy(connector, proxy)
+                    .map_err(|e| ErrorKind::Http.context(e))?;
+                let client = Client::builder().build(proxy_connector);
 
-        Self {
-            inner: InnerClient::Https(client),
-            hostname: hostname.into(),
-        }
-    }
-
-    /// Create a new HTTPS client which connects via a proxy
-    pub fn new_with_proxy(
-        hostname: &str,
-        proxy_host: &str,
-        proxy_port: u64,
-    ) -> Result<Self, Error> {
-        let proxy_uri = format!("http://{}:{}", proxy_host, proxy_port)
-            .parse()
-            .unwrap_or_else(|e| {
-                panic!(
-                    "error constructing proxy URI: {} (host:{}, port:{})",
-                    e, proxy_host, proxy_port
-                )
-            });
-
-        // TODO(tarcieri): proxy auth
-        let proxy = Proxy::new(Intercept::All, proxy_uri);
-
-        let connector = HttpsConnector::new();
-
-        let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap_or_else(|e| {
-            panic!("error initializing proxy URI: {}", e);
-        });
-
-        let client = Client::builder().build(proxy_connector);
+                InnerClient::HttpsViaProxy(client)
+            }
+            None => {
+                let client = Client::builder().build(HttpsConnector::new());
+                InnerClient::Https(client)
+            }
+        };
 
         Ok(Self {
-            inner: InnerClient::HttpsViaProxy(client),
-            hostname: hostname.to_owned(),
+            inner,
+            hostname: hostname.into(),
         })
     }
 

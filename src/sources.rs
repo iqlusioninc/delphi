@@ -53,7 +53,7 @@ pub struct Sources {
 
 impl Sources {
     /// Initialize sources from config
-    pub fn new(config: &DelphiConfig) -> Self {
+    pub fn new(config: &DelphiConfig) -> Result<Self, Error> {
         // TODO(tarcieri): support optionally enabling sources based on config
         let alphavantage = AlphavantageSource::new(
             &config
@@ -63,14 +63,14 @@ impl Sources {
                 .expect("missing alphavantage config")
                 .apikey,
         );
-        let binance = BinanceSource::new();
+        let binance = BinanceSource::new(&config.https)?;
         let coinone = CoinoneSource::new();
         let dunamu = DunamuSource::new();
         let gdac = GdacSource::new();
         let gopax = GopaxSource::new();
         let imf_sdr = ImfSDRSource::new();
 
-        Sources {
+        Ok(Sources {
             alphavantage,
             binance,
             coinone,
@@ -78,7 +78,7 @@ impl Sources {
             gdac,
             gopax,
             imf_sdr,
-        }
+        })
     }
 }
 
