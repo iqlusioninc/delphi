@@ -63,8 +63,6 @@ impl Denom {
                     .gdac
                     .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                     .await?;
-                // dbg!(&gdac_response);
-                // let gdac_midpoint = midpoint(&gdac_response)?;
                 dbg!(&gdac_midpoint);
 
                 // Source: Binance
