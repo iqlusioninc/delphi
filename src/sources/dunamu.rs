@@ -1,27 +1,24 @@
 //! Dunamu Source Provider (v0.4 API)
 //! <https://www.dunamu.com/>
 
+use super::Price;
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+    Currency, TradingPair,
+};
 use crate::{
     error::{Error, ErrorKind},
     prelude::*,
 };
-use super::{midpoint,Price};
-use crate::{Currency, TradingPair,config::HttpsConfig,https_client::{HttpsClient, Query}};
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
-};
-use hyper_rustls::HttpsConnector;
-use serde::{Deserialize, Serialize};
-use rust_decimal::Decimal;
 
+use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 
 //https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD
 
 /// Base URI for requests to the Dunamu API
 pub const API_HOST: &str = "quotation-api-cdn.dunamu.com";
-
 
 /// Source provider for Dunamu
 pub struct DunamuSource {
@@ -35,7 +32,6 @@ impl DunamuSource {
         let https_client = HttpsClient::new(API_HOST, config)?;
         Ok(Self { https_client })
     }
-    
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
@@ -43,15 +39,14 @@ impl DunamuSource {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
 
-
         let mut query = Query::new();
-        query.add("codes", format!("FRX.{}{}",pair.0,pair.1));
+        query.add("codes", format!("FRX.{}{}", pair.0, pair.1));
 
-        let api_response:Response = self
+        let api_response: Response = self
             .https_client
             .get_json("/v1/forex/recent", &query)
             .await?;
-        let price: Decimal =api_response[0].base_price.to_string().parse()?;
+        let price: Decimal = api_response[0].base_price.to_string().parse()?;
         Ok(Price::new(price)?)
     }
 }
@@ -122,8 +117,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
-        let _response = block_on(DunamuSource::new(&Default::default()).unwrap().trading_pairs(&pair)).unwrap();
-
+        let _response = block_on(
+            DunamuSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -133,8 +132,12 @@ mod tests {
         let pair = "N/A".parse().unwrap();
 
         // TODO(tarcieri): test 404 handling
-        let _err = block_on(DunamuSource::new(&Default::default()).unwrap().trading_pairs(&pair))
-            .err()
-            .unwrap();
+        let _err = block_on(
+            DunamuSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .err()
+        .unwrap();
     }
 }

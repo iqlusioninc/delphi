@@ -2,16 +2,12 @@
 //! <https://www.gopax.co.id/API/>
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
-use super::{AskBook, BidBook, midpoint};
-use crate::{prelude::*, Error, ErrorKind, Price, PriceQuantity, TradingPair,config::HttpsConfig,https_client::{HttpsClient, Query},
-
+use super::{midpoint, AskBook, BidBook};
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+    Error, Price, PriceQuantity, TradingPair,
 };
-use bytes::buf::ext::BufExt;
-use hyper::{
-    client::{Client, HttpConnector},
-    header, Body, Request,
-};
-use hyper_rustls::HttpsConnector;
 use rust_decimal::Decimal;
 use serde::{de, Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -31,16 +27,17 @@ impl GopaxSource {
         let https_client = HttpsClient::new(API_HOST, config)?;
         Ok(Self { https_client })
     }
-    
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
-      
         let query = Query::new();
 
-        let api_response:Response = self
+        let api_response: Response = self
             .https_client
-            .get_json(&format!("/trading-pairs/{}-{}/book", pair.0, pair.1), &query)
+            .get_json(
+                &format!("/trading-pairs/{}-{}/book", pair.0, pair.1),
+                &query,
+            )
             .await?;
 
         midpoint(&api_response)
@@ -145,7 +142,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _quote = block_on(GopaxSource::new(&Default::default()).unwrap().trading_pairs(&pair)).unwrap();
+        let _quote = block_on(
+            GopaxSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -153,7 +155,11 @@ mod tests {
     #[ignore]
     fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
-        let quote = block_on(GopaxSource::new(&Default::default()).unwrap().trading_pairs(&pair));
+        let quote = block_on(
+            GopaxSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        );
         assert!(quote.is_err());
     }
 }
