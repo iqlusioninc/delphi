@@ -62,11 +62,12 @@ impl Sources {
                 .as_ref()
                 .expect("missing alphavantage config")
                 .apikey,
-        );
+            &config.https,
+        )?;
         let binance = BinanceSource::new(&config.https)?;
-        let coinone = CoinoneSource::new();
+        let coinone = CoinoneSource::new(&config.https)?;
         let dunamu = DunamuSource::new();
-        let gdac = GdacSource::new();
+        let gdac = GdacSource::new(&config.https)?;
         let gopax = GopaxSource::new();
         let imf_sdr = ImfSDRSource::new();
 

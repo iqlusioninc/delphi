@@ -4,11 +4,14 @@
 //! Only KRW pairs are supported.
 
 use super::{midpoint, AskBook, BidBook};
-use crate::https_client::{HttpsClient, Query};
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+};
 use crate::{prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair};
 use serde::{Deserialize, Serialize};
 
-/// Base URI for requests to the Coinone API
+/// Hostname for Coinone API
 pub const API_HOST: &str = "api.coinone.co.kr";
 
 /// Source provider for Coinone
@@ -18,11 +21,9 @@ pub struct CoinoneSource {
 
 impl CoinoneSource {
     /// Create a new Coinone source provider
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            https_client: HttpsClient::new(API_HOST),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get trading pairs
@@ -127,7 +128,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _price = block_on(CoinoneSource::new().trading_pairs(&pair)).unwrap();
+        let _price = block_on(
+            CoinoneSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -137,8 +143,12 @@ mod tests {
         let pair = "N/A".parse().unwrap();
 
         // TODO(tarcieri): test 404 handling
-        let _err = block_on(CoinoneSource::new().trading_pairs(&pair))
-            .err()
-            .unwrap();
+        let _err = block_on(
+            CoinoneSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .err()
+        .unwrap();
     }
 }

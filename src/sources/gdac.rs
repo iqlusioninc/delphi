@@ -2,7 +2,10 @@
 //! <https://www.gdac.com/>
 
 use super::{midpoint, AskBook, BidBook};
-use crate::https_client::{HttpsClient, Query};
+use crate::{
+    config::HttpsConfig,
+    https_client::{HttpsClient, Query},
+};
 use crate::{Error, Price, PriceQuantity, TradingPair};
 use serde::{de, Deserialize, Serialize};
 use std::{
@@ -20,11 +23,9 @@ pub struct GdacSource {
 
 impl GdacSource {
     /// Create a new GDAC source provider
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            https_client: HttpsClient::new(API_HOST),
-        }
+    pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
+        let https_client = HttpsClient::new(API_HOST, config)?;
+        Ok(Self { https_client })
     }
 
     /// Get trading pairs
@@ -153,7 +154,7 @@ impl<'de> Deserialize<'de> for ErrorCode {
 
 #[cfg(test)]
 mod tests {
-    use super::{ErrorCode, GdacSource};
+    use super::GdacSource;
     use std::future::Future;
 
     fn block_on<F: Future>(future: F) -> F::Output {
@@ -170,7 +171,12 @@ mod tests {
     #[ignore]
     fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _price = block_on(GdacSource::new().trading_pairs(&pair)).unwrap();
+        let _price = block_on(
+            GdacSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
@@ -179,8 +185,12 @@ mod tests {
     fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
 
-        let _err = block_on(GdacSource::new().trading_pairs(&pair))
-            .err()
-            .unwrap();
+        let _err = block_on(
+            GdacSource::new(&Default::default())
+                .unwrap()
+                .trading_pairs(&pair),
+        )
+        .err()
+        .unwrap();
     }
 }
