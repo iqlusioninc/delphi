@@ -65,9 +65,9 @@ impl Sources {
         );
         let binance = BinanceSource::new(&config.https)?;
         let coinone = CoinoneSource::new();
-        let dunamu = DunamuSource::new();
+        let dunamu = DunamuSource::new(&config.https)?;
         let gdac = GdacSource::new();
-        let gopax = GopaxSource::new();
+        let gopax = GopaxSource::new(&config.https)?;
         let imf_sdr = ImfSDRSource::new(&config.https)?;
 
         Ok(Sources {

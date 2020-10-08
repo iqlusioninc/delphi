@@ -69,7 +69,6 @@ impl IMFSDRRow {
 
 impl ImfSDRSource {
     /// Create a new Dunamu source provider
-    #[allow(clippy::new_without_default)]
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
         let https_client = HttpsClient::new(API_HOST, config)?;
         Ok(Self { https_client })
