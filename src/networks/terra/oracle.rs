@@ -5,7 +5,7 @@ use super::{
     msg::{self, MsgAggregateExchangeRateVote},
     MEMO, SCHEMA,
 };
-use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources};
+use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources, Error};
 use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
@@ -22,7 +22,10 @@ impl ExchangeRateOracle {
     pub fn new() -> Self {
         let state = {
             let config = app_config();
-            OracleState::new(&config)
+            OracleState::new(&config).unwrap_or_else(|e| {
+                // TODO(tarcieri): better error handling?
+                panic!("error initializing Terra oracle: {}", e);
+            })
         };
 
         ExchangeRateOracle(Arc::new(Mutex::new(state)))
@@ -158,7 +161,7 @@ struct OracleState {
 
 impl OracleState {
     /// Initialize oracle state
-    fn new(config: &DelphiConfig) -> Self {
+    fn new(config: &DelphiConfig) -> Result<Self, Error> {
         let terra_config = config
             .network
             .terra
@@ -174,15 +177,15 @@ impl OracleState {
             .1;
 
         let fee = StdFee::from(&terra_config.fee);
-        let sources = Sources::new(config);
+        let sources = Sources::new(config)?;
 
-        Self {
+        Ok(Self {
             chain_id: terra_config.chain_id.to_owned(),
             feeder,
             validator,
             fee,
             sources,
             unrevealed_votes: vec![],
-        }
+        })
     }
 }

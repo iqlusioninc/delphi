@@ -1,11 +1,17 @@
 # Example Delphi configuration file
 
+# HTTPS configuration
+# [https]
+# proxy = "https://webproxy.example.com:8080" # send outgoing requests through proxy
+
+# Network configuration: blockchains for which oracle service is provided
 [network.terra]
 chain_id = "columbus-4"
 feeder = "terra1..."
 validator = "terravaloper1..."
 fee = { denom = "ukrw", amount = "356100", gas = "200000" }
 
+# Source configuration: exchanges where price information is gathered from
 [source.alphavantage]
 # Get API key here (quick-and-simple form): https://www.alphavantage.co/support/#api-key
 apikey = "api key goes here"
