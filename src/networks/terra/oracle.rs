@@ -2,14 +2,14 @@
 
 use super::{
     denom::Denom,
-    msg::{self, MsgAggregateExchangeRateVote},
+    msg::{self, MsgAggregateExchangeRateVote, VOTE_MSG_NAME},
     MEMO, SCHEMA,
 };
 use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources, Error};
 use futures::future::join_all;
 use serde_json::json;
 use std::{convert::Infallible, sync::Arc, time::Instant};
-use stdtx::{amino_types::StdFee, Address};
+use stdtx::{amino_types::StdFee, Address, TypeName};
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
@@ -43,22 +43,23 @@ impl ExchangeRateOracle {
         let started_at = Instant::now();
         let chain_id = self.get_chain_id().await;
         let msgs = self.get_vote_msgs().await;
+        let oracle_state = self.0.lock().await;
 
-        let msg_json = msgs
+        let tx = msgs
             .iter()
-            .map(|msg| msg.to_json_value(&SCHEMA))
+            .map(|msg| {
+                json!({
+                    "chain_id": chain_id,
+                    "fee": oracle_state.fee(msg.type_name()),
+                    "memo": MEMO,
+                    "msgs": [msg.to_json_value(&SCHEMA)],
+                })
+            })
             .collect::<Vec<_>>();
-
-        let tx = json!({
-            "chain_id": chain_id,
-            "fee": self.oracle_fee().await,
-            "memo": MEMO,
-            "msgs": msg_json,
-        });
 
         let response = json!({
             "status": "ok",
-            "tx": vec![tx]
+            "tx": tx
         });
 
         info!("t={:?}", Instant::now().duration_since(started_at));
@@ -124,12 +125,6 @@ impl ExchangeRateOracle {
 
         msgs
     }
-
-    /// Compute the oracle fee
-    pub async fn oracle_fee(&self) -> StdFee {
-        let state = self.0.lock().await;
-        state.fee.clone()
-    }
 }
 
 impl Default for ExchangeRateOracle {
@@ -187,5 +182,14 @@ impl OracleState {
             sources,
             unrevealed_votes: vec![],
         })
+    }
+
+    /// Compute the oracle fee
+    pub fn fee(&self, msg_type: &TypeName) -> StdFee {
+        if msg_type.as_str() == VOTE_MSG_NAME {
+            self.fee.clone()
+        } else {
+            StdFee::for_gas(self.fee.gas)
+        }
     }
 }
