@@ -19,12 +19,6 @@ use stdtx::{Address, Decimal};
 /// Truncated SHA-256 hash to include in a pre-vote
 pub type Hash = [u8; 20];
 
-/// Message type name for [`MsgAggregateExchangeRateVote`]
-pub const VOTE_MSG_NAME: &str = "oracle/MsgAggregateExchangeRateVote";
-
-/// Message type name for [`MsgAggregateExchangeRatePrevote`]
-pub const PREVOTE_MSG_NAME: &str = "oracle/MsgAggregateExchangeRatePrevote";
-
 /// Terra Oracle Aggregate Vote Message (`oracle/MsgAggregateExchangeRateVote`)
 /// <https://docs.terra.money/dev/spec-oracle.html#msgaggregateexchangeratevote>
 #[derive(Clone, Debug)]
@@ -50,12 +44,14 @@ impl MsgAggregateExchangeRateVote {
 
     /// Simple builder for an `oracle/MsgAggregateExchangeRateVote` message
     pub fn to_stdtx_msg(&self) -> Result<stdtx::Msg, Error> {
-        Ok(stdtx::msg::Builder::new(&SCHEMA, VOTE_MSG_NAME)?
-            .string("exchange_rates", self.exchange_rates.to_string())?
-            .string("salt", &self.salt)?
-            .acc_address("feeder", self.feeder)?
-            .val_address("validator", self.validator)?
-            .to_msg())
+        Ok(
+            stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRateVote")?
+                .string("exchange_rates", self.exchange_rates.to_string())?
+                .string("salt", &self.salt)?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
+                .to_msg(),
+        )
     }
 
     /// Compute prevote from this vote
@@ -99,11 +95,13 @@ pub struct MsgAggregateExchangeRatePrevote {
 impl MsgAggregateExchangeRatePrevote {
     /// Simple builder for an `oracle/MsgAggregateExchangeRatePrevote` message
     pub fn to_stdtx_msg(&self) -> Result<stdtx::Msg, Error> {
-        Ok(stdtx::msg::Builder::new(&SCHEMA, PREVOTE_MSG_NAME)?
-            .bytes("hash", self.hash.as_ref())?
-            .acc_address("feeder", self.feeder)?
-            .val_address("validator", self.validator)?
-            .to_msg())
+        Ok(
+            stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
+                .bytes("hash", self.hash.as_ref())?
+                .acc_address("feeder", self.feeder)?
+                .val_address("validator", self.validator)?
+                .to_msg(),
+        )
     }
 }
 
