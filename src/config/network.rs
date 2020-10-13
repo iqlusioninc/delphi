@@ -28,6 +28,9 @@ pub struct TerraConfig {
     /// Oracle transaction fee
     #[serde(default)]
     pub fee: TerraOracleFee,
+
+    /// Timeout for an oracle vote in seconds (default 10)
+    pub timeout_secs: Option<u64>,
 }
 
 /// Terra oracle fee configuration

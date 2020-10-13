@@ -8,10 +8,17 @@ use super::{
 use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources, Error};
 use futures::future::join_all;
 use serde_json::json;
-use std::{convert::Infallible, sync::Arc, time::Instant};
+use std::{
+    convert::Infallible,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 use stdtx::{amino_types::StdFee, Address};
-use tokio::sync::Mutex;
+use tokio::{sync::Mutex, time::timeout};
 use warp::http::StatusCode;
+
+/// Number of seconds to wait for an oracle vote complete
+pub const DEFAULT_TIMEOUT_SECS: u64 = 10;
 
 /// Terra exchange rate oracle
 #[derive(Clone)]
@@ -44,21 +51,27 @@ impl ExchangeRateOracle {
         let chain_id = self.get_chain_id().await;
         let msgs = self.get_vote_msgs().await;
 
-        let msg_json = msgs
-            .iter()
-            .map(|msg| msg.to_json_value(&SCHEMA))
-            .collect::<Vec<_>>();
+        let tx = if msgs.is_empty() {
+            vec![]
+        } else {
+            let msg_json = msgs
+                .iter()
+                .map(|msg| msg.to_json_value(&SCHEMA))
+                .collect::<Vec<_>>();
 
-        let tx = json!({
-            "chain_id": chain_id,
-            "fee": self.oracle_fee().await,
-            "memo": MEMO,
-            "msgs": msg_json,
-        });
+            let tx = json!({
+                "chain_id": chain_id,
+                "fee": self.oracle_fee().await,
+                "memo": MEMO,
+                "msgs": msg_json,
+            });
+
+            vec![tx]
+        };
 
         let response = json!({
             "status": "ok",
-            "tx": vec![tx]
+            "tx": tx
         });
 
         info!("t={:?}", Instant::now().duration_since(started_at));
@@ -79,12 +92,19 @@ impl ExchangeRateOracle {
     async fn get_vote_msgs(&self) -> Vec<stdtx::Msg> {
         let mut state = self.0.lock().await;
         let mut exchange_rates = msg::ExchangeRates::new();
-
         let mut exchange_rate_fut = vec![];
+
         for denom in Denom::kinds() {
             exchange_rate_fut.push(denom.get_exchange_rate(&state.sources))
         }
-        let rates = join_all(exchange_rate_fut).await;
+
+        let rates = match timeout(state.timeout, join_all(exchange_rate_fut)).await {
+            Ok(res) => res,
+            Err(e) => {
+                warn!("oracle vote timed out after {:?}: {}", state.timeout, e);
+                return vec![];
+            }
+        };
 
         for (rate, denom) in rates.iter().zip(Denom::kinds()) {
             match rate {
@@ -155,6 +175,9 @@ struct OracleState {
     /// Sources
     sources: Sources,
 
+    /// Timeout
+    timeout: Duration,
+
     /// Previously unrevealed votes
     unrevealed_votes: Vec<stdtx::Msg>,
 }
@@ -178,6 +201,8 @@ impl OracleState {
 
         let fee = StdFee::from(&terra_config.fee);
         let sources = Sources::new(config)?;
+        let timeout =
+            Duration::from_secs(terra_config.timeout_secs.unwrap_or(DEFAULT_TIMEOUT_SECS));
 
         Ok(Self {
             chain_id: terra_config.chain_id.to_owned(),
@@ -185,6 +210,7 @@ impl OracleState {
             validator,
             fee,
             sources,
+            timeout,
             unrevealed_votes: vec![],
         })
     }
