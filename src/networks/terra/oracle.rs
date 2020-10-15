@@ -16,7 +16,7 @@ use std::{
 };
 use stdtx::{amino_types::StdFee, Address};
 use tendermint::chain;
-use tendermint_rpc::endpoint::{broadcast::tx_commit, status};
+use tendermint_rpc::endpoint::{broadcast::tx_commit, status::SyncInfo};
 use tokio::{sync::Mutex, time::timeout};
 use warp::http::StatusCode;
 
@@ -117,7 +117,10 @@ impl ExchangeRateOracle {
 
         // Move all previously unrevealed votes into the result
         let mut msgs = vec![];
-        msgs.append(&mut state.unrevealed_votes);
+
+        if let Some(vote) = state.unrevealed_vote.take() {
+            msgs.push(vote)
+        }
 
         let vote_msg = MsgAggregateExchangeRateVote {
             exchange_rates,
@@ -137,7 +140,7 @@ impl ExchangeRateOracle {
             .to_stdtx_msg()
             .expect("can't serialize vote as stdtx");
 
-        state.unrevealed_votes.push(vote_msg_stdtx);
+        state.unrevealed_vote = Some(vote_msg_stdtx);
 
         msgs
     }
@@ -166,7 +169,7 @@ pub struct Request {
     pub context: String,
 
     /// Network status
-    pub status: Option<status::Response>,
+    pub status: Option<SyncInfo>,
 
     /// Response from last signed TX (if available)
     pub last_tx_response: Option<tx_commit::Response>,
@@ -192,8 +195,8 @@ struct OracleState {
     /// Timeout
     timeout: Duration,
 
-    /// Previously unrevealed votes
-    unrevealed_votes: Vec<stdtx::Msg>,
+    /// Previously unrevealed vote
+    unrevealed_vote: Option<stdtx::Msg>,
 }
 
 impl OracleState {
@@ -225,7 +228,7 @@ impl OracleState {
             fee,
             sources,
             timeout,
-            unrevealed_votes: vec![],
+            unrevealed_vote: None,
         })
     }
 }
