@@ -7,6 +7,7 @@ use super::{
 };
 use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources, Error};
 use futures::future::join_all;
+use serde::Deserialize;
 use serde_json::json;
 use std::{
     convert::Infallible,
@@ -14,6 +15,8 @@ use std::{
     time::{Duration, Instant},
 };
 use stdtx::{amino_types::StdFee, Address};
+use tendermint::chain;
+use tendermint_rpc::endpoint::{broadcast::tx_commit, status};
 use tokio::{sync::Mutex, time::timeout};
 use warp::http::StatusCode;
 
@@ -40,19 +43,15 @@ impl ExchangeRateOracle {
 
     /// Handle an incoming oracle request, providing a set of transactions to
     /// respond with.
-    ///
-    /// Test with:
-    ///
-    /// ```text
-    /// $ curl --request POST http://127.0.0.1:23456/oracles/terra
-    /// ```
-    pub async fn handle_request(self) -> Result<impl warp::Reply, Infallible> {
+    pub async fn handle_request(self, req: Request) -> Result<impl warp::Reply, Infallible> {
+        dbg!(&req);
+
         let started_at = Instant::now();
         let chain_id = self.get_chain_id().await;
         let msgs = self.get_vote_msgs().await;
 
-        let tx = if msgs.is_empty() {
-            vec![]
+        let response = if msgs.is_empty() {
+            json!({"status": "ok"})
         } else {
             let msg_json = msgs
                 .iter()
@@ -66,13 +65,11 @@ impl ExchangeRateOracle {
                 "msgs": msg_json,
             });
 
-            vec![tx]
+            json!({
+                "status": "ok",
+                "tx": tx
+            })
         };
-
-        let response = json!({
-            "status": "ok",
-            "tx": tx
-        });
 
         info!("t={:?}", Instant::now().duration_since(started_at));
 
@@ -156,6 +153,23 @@ impl Default for ExchangeRateOracle {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Request data
+#[derive(Clone, Debug, Deserialize)]
+pub struct Request {
+    /// Chain ID
+    pub network: chain::Id,
+
+    /// Arbitrary context string to pass to transaction source
+    #[serde(default)]
+    pub context: String,
+
+    /// Network status
+    pub status: Option<status::Response>,
+
+    /// Response from last signed TX (if available)
+    pub last_tx_response: Option<tx_commit::Response>,
 }
 
 /// Inner (synchronized) oracle state

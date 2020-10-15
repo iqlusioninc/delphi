@@ -30,7 +30,7 @@ limitations under the License.
 [build-link]: https://github.com/iqlusioninc/delphi/actions
 [safety-image]: https://img.shields.io/badge/unsafe-forbidden-success.svg
 [safety-link]: https://github.com/rust-secure-code/safety-dance/
-[msrv-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[msrv-image]: https://img.shields.io/badge/rustc-1.44+-blue.svg
 [license-image]: https://img.shields.io/badge/license-Apache2.0-blue.svg
 [license-link]: https://github.com/iqlusioninc/delphi/blob/master/LICENSE
 [gitter-image]: https://badges.gitter.im/badge.svg

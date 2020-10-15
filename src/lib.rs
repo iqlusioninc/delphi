@@ -12,6 +12,7 @@ pub mod https_client;
 pub mod networks;
 pub mod prelude;
 pub mod price;
+pub mod router;
 pub mod sources;
 pub mod trading_pair;
 
