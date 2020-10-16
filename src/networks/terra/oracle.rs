@@ -44,11 +44,9 @@ impl ExchangeRateOracle {
     /// Handle an incoming oracle request, providing a set of transactions to
     /// respond with.
     pub async fn handle_request(self, req: Request) -> Result<impl warp::Reply, Infallible> {
-        dbg!(&req);
-
         let started_at = Instant::now();
         let chain_id = self.get_chain_id().await;
-        let msgs = self.get_vote_msgs().await;
+        let msgs = self.get_vote_msgs(req.last_tx_response).await;
 
         let response = if msgs.is_empty() {
             json!({"status": "ok"})
@@ -86,7 +84,10 @@ impl ExchangeRateOracle {
     }
 
     /// Get oracle vote messages
-    async fn get_vote_msgs(&self) -> Vec<stdtx::Msg> {
+    async fn get_vote_msgs(
+        &self,
+        last_tx_response: Option<tx_commit::Response>,
+    ) -> Vec<stdtx::Msg> {
         let mut state = self.0.lock().await;
         let mut exchange_rates = msg::ExchangeRates::new();
         let mut exchange_rate_fut = vec![];
@@ -119,7 +120,17 @@ impl ExchangeRateOracle {
         let mut msgs = vec![];
 
         if let Some(vote) = state.unrevealed_vote.take() {
-            msgs.push(vote)
+            // Determine if the last transaction we sent was successful
+            let last_tx_success = last_tx_response
+                .map(|tx| tx.check_tx.code.is_ok() && tx.deliver_tx.code.is_ok())
+                .unwrap_or(false);
+
+            if last_tx_success {
+                // Only include the previous vote if we succeeded in publishing
+                // an oracle prevote. Otherwise DeliverTx fails because we
+                // don't have a corresponding prevote
+                msgs.push(vote);
+            }
         }
 
         let vote_msg = MsgAggregateExchangeRateVote {
