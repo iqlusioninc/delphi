@@ -14,6 +14,7 @@ use std::{
     fmt::{self, Display},
     str::FromStr,
 };
+use tokio::try_join;
 
 /// Denomination
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -51,28 +52,15 @@ impl Denom {
     pub async fn get_exchange_rate(self, sources: &Sources) -> Result<stdtx::Decimal, Error> {
         match self {
             Denom::UKRW => {
-                // Source: CoinOne
-                let coinone_midpoint = sources
-                    .coinone
-                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
-                    .await?;
-                dbg!(&coinone_midpoint);
+                let pair = TradingPair(Currency::Luna, Currency::Krw);
 
-                // Source: GDAC
-                let gdac_midpoint = sources
-                    .gdac
-                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
-                    .await?;
-                dbg!(&gdac_midpoint);
+                let (coinone_midpoint, gdac_midpoint, binance_response) = try_join!(
+                    sources.coinone.trading_pairs(&pair),
+                    sources.gdac.trading_pairs(&pair),
+                    sources.binance.approx_price_for_pair(&pair)
+                )?;
 
-                // Source: Binance
-                let binance_response = sources
-                    .binance
-                    .approx_price_for_pair(&"LUNA/KRW".parse().unwrap())
-                    .await
-                    .unwrap();
-
-                dbg!(&binance_response);
+                dbg!(&coinone_midpoint, &gdac_midpoint, &binance_response);
 
                 //Midpoint avg for all sources
                 let mut luna_krw =
@@ -86,29 +74,25 @@ impl Denom {
             }
 
             Denom::UMNT => {
-                // Source: AlphaVantage
-                let alphavantage_response_usd = sources
-                    .alphavantage
-                    .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt))
-                    .await?;
-
-                let alphavantage_response_krw = sources
-                    .alphavantage
-                    .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt))
-                    .await?;
-
-                // Source: Binance
-                let binance_response = sources
-                    .binance
-                    .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
-                    .await
-                    .unwrap();
-
-                // Source: CoinOne
-                let coinone_midpoint = sources
-                    .coinone
-                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
-                    .await?;
+                let (
+                    alphavantage_response_usd,
+                    alphavantage_response_krw,
+                    binance_response,
+                    coinone_midpoint,
+                ) = try_join!(
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt)),
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt)),
+                    sources
+                        .binance
+                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+                    sources
+                        .coinone
+                        .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
+                )?;
 
                 let mut luna_mnt = Decimal::from(
                     (binance_response * alphavantage_response_usd
@@ -123,12 +107,10 @@ impl Denom {
             }
 
             Denom::UUSD => {
-                // Source: Binance
                 let binance_response = sources
                     .binance
-                    .approx_price_for_pair(&"LUNA/USD".parse().unwrap())
-                    .await
-                    .unwrap();
+                    .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd))
+                    .await?;
 
                 let mut luna_usd: Decimal = binance_response.into();
 
@@ -140,18 +122,14 @@ impl Denom {
             }
 
             Denom::USDR => {
-                //Source IMF_SDR
-                let imf_sdr_response = sources
-                    .imf_sdr
-                    .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr))
-                    .await
-                    .unwrap();
-
-                // Source: CoinOne
-                let coinone_midpoint = sources
-                    .coinone
-                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
-                    .await?;
+                let (imf_sdr_response, coinone_midpoint) = try_join!(
+                    sources
+                        .imf_sdr
+                        .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr)),
+                    sources
+                        .coinone
+                        .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
+                )?;
 
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
 
