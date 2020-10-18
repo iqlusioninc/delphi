@@ -14,7 +14,7 @@ use std::{
     fmt::{self, Display},
     str::FromStr,
 };
-use tokio::join;
+use tokio::try_join;
 
 /// Hostname for the Binance API
 pub const API_HOST: &str = "api.binance.com";
@@ -41,23 +41,22 @@ impl BinanceSource {
         // Approximate prices by querying other currency pairs
         match pair {
             TradingPair(Currency::Luna, Currency::Krw) => {
-                let (luna_btc, btc_bkrw) = join!(
+                let (luna_btc, btc_bkrw) = try_join!(
                     self.avg_price_for_symbol(SymbolName::LunaBtc),
                     self.avg_price_for_symbol(SymbolName::BtcBkrw)
-                );
+                )?;
 
                 // Compute KRW by proxy using LUNA -> BTC -> KRW-ish
-                Ok(luna_btc? * btc_bkrw?)
+                Ok(luna_btc * btc_bkrw)
             }
             TradingPair(Currency::Luna, Currency::Usd) => {
-                let (luna_busd, luna_usdt) = join!(
+                let (luna_busd, luna_usdt) = try_join!(
                     self.avg_price_for_symbol(SymbolName::LunaBusd),
                     self.avg_price_for_symbol(SymbolName::LunaUsdt)
-                );
+                )?;
 
                 // Give BUSD and USDT equal weight
-                let avg = (luna_busd? + luna_usdt?) / 2;
-                Ok(avg)
+                Ok((luna_busd + luna_usdt) / 2)
             }
             _ => fail!(ErrorKind::Currency, "unsupported Binance pair: {}", pair),
         }
@@ -72,6 +71,7 @@ impl BinanceSource {
             .https_client
             .get_json("/api/v3/avgPrice", &query)
             .await?;
+
         Price::new(api_response.price)
     }
 }
