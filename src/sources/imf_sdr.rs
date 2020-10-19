@@ -5,9 +5,10 @@ use crate::{
     config::HttpsConfig,
     error::{Error, ErrorKind},
     https_client::HttpsClient,
+    https_client::USER_AGENT,
     prelude::*,
+    Currency, Price, TradingPair,
 };
-use crate::{Currency, Price, TradingPair};
 use bytes::buf::ext::BufExt;
 use hyper::{header, Body, Request};
 use serde::{Deserialize, Serialize};
@@ -17,9 +18,6 @@ use std::convert::TryFrom;
 
 /// Base URI for requests to the Coinone API
 pub const API_HOST: &str = "www.imf.org";
-
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
 
 /// The IMF returns tab seperated data is form that is designed to for
 
