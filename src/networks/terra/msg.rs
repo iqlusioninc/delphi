@@ -5,12 +5,13 @@
 use super::{Denom, SCHEMA};
 use crate::{
     error::{Error, ErrorKind},
+    map,
     prelude::*,
+    Map,
 };
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::BTreeMap as Map,
     convert::TryFrom,
     fmt::{self, Display},
 };
@@ -143,6 +144,11 @@ impl ExchangeRates {
         );
 
         Ok(())
+    }
+
+    /// Iterate over the exchange rates
+    pub fn iter(&self) -> map::Iter<'_, Denom, Decimal> {
+        self.0.iter()
     }
 }
 

@@ -44,7 +44,6 @@ impl ExchangeRateOracle {
     /// Handle an incoming oracle request, providing a set of transactions to
     /// respond with.
     pub async fn handle_request(self, req: Request) -> Result<impl warp::Reply, Infallible> {
-        let started_at = Instant::now();
         let chain_id = self.get_chain_id().await;
         let msgs = self.get_vote_msgs(req.last_tx_response).await;
 
@@ -69,8 +68,6 @@ impl ExchangeRateOracle {
             })
         };
 
-        info!("t={:?}", Instant::now().duration_since(started_at));
-
         Ok(warp::reply::with_status(
             warp::reply::json(&response),
             StatusCode::OK,
@@ -88,6 +85,7 @@ impl ExchangeRateOracle {
         &self,
         last_tx_response: Option<tx_commit::Response>,
     ) -> Vec<stdtx::Msg> {
+        let started_at = Instant::now();
         let mut state = self.0.lock().await;
         let mut exchange_rates = msg::ExchangeRates::new();
         let mut exchange_rate_fut = vec![];
@@ -114,7 +112,15 @@ impl ExchangeRateOracle {
             };
         }
 
-        dbg!(&exchange_rates);
+        info!(
+            "voting {} ({:?})",
+            exchange_rates
+                .iter()
+                .map(|(denom, decimal)| format!("{}={}", denom, decimal))
+                .collect::<Vec<_>>()
+                .join(", "),
+            Instant::now().duration_since(started_at)
+        );
 
         // Move all previously unrevealed votes into the result
         let mut msgs = vec![];

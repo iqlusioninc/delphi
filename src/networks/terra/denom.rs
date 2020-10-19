@@ -60,16 +60,11 @@ impl Denom {
                     sources.binance.approx_price_for_pair(&pair)
                 )?;
 
-                dbg!(&coinone_midpoint, &gdac_midpoint, &binance_response);
-
                 //Midpoint avg for all sources
                 let mut luna_krw =
                     Decimal::from((coinone_midpoint + gdac_midpoint + binance_response) / 3);
-                dbg!(&luna_krw);
 
-                dbg!(&luna_krw, luna_krw.scale());
                 luna_krw.rescale(18);
-                dbg!(&luna_krw, luna_krw.scale());
                 Ok(luna_krw.try_into()?)
             }
 
@@ -99,10 +94,8 @@ impl Denom {
                         + coinone_midpoint * alphavantage_response_krw)
                         / 2,
                 );
-                dbg!(luna_mnt);
 
                 luna_mnt.rescale(18);
-
                 Ok(luna_mnt.try_into()?)
             }
 
@@ -113,11 +106,7 @@ impl Denom {
                     .await?;
 
                 let mut luna_usd: Decimal = binance_response.into();
-
-                dbg!(luna_usd);
-
                 luna_usd.rescale(18);
-
                 Ok(luna_usd.try_into()?)
             }
 
@@ -132,11 +121,7 @@ impl Denom {
                 )?;
 
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
-
-                dbg!(luna_sdr);
-
                 luna_sdr.rescale(18);
-
                 Ok(luna_sdr.try_into()?)
             }
         }
