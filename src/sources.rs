@@ -15,9 +15,6 @@ use self::{
 use crate::{config::DelphiConfig, Error, Price, PriceQuantity};
 use rust_decimal::Decimal;
 
-/// User-Agent to send in HTTP request
-pub const USER_AGENT: &str = "iqlusion delphi";
-
 // TODO(shella): factor this into e.g. a common Tower service when we have 2+ oracles
 
 /// Terra oracle sources
