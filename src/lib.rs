@@ -22,3 +22,5 @@ pub use self::{
     price::{Price, PriceQuantity},
     trading_pair::TradingPair,
 };
+
+pub use std::collections::{btree_map as map, BTreeMap as Map};
