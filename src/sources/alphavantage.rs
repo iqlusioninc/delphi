@@ -5,8 +5,9 @@
 use crate::{
     config::HttpsConfig,
     https_client::{HttpsClient, Query},
+    prelude::*,
 };
-use crate::{Error, Price, TradingPair};
+use crate::{Error, ErrorKind, Price, TradingPair};
 use serde::{Deserialize, Serialize};
 /// Hostname for AlphaVantage API
 pub const API_HOST: &str = "www.alphavantage.co";
@@ -58,17 +59,23 @@ impl AlphavantageSource {
         };
 
         let query = params.to_request_uri();
-        let api_response: Response = self.https_client.get_json("/query", &query).await?;
-        Ok(api_response.realtime_currency_exchange_rate.exchange_rate)
+        match self.https_client.get_json("/query", &query).await? {
+            Response::Success(resp) => Ok(resp.exchange_rate),
+            Response::Error(msg) => fail!(ErrorKind::Source, "Alpha Vantage error: {}", msg),
+        }
     }
 }
 
 /// Outer struct of the API responses
 #[derive(Serialize, Deserialize)]
-pub struct Response {
+pub enum Response {
+    /// Successful API response
     #[serde(rename = "Realtime Currency Exchange Rate")]
-    ///API response
-    pub realtime_currency_exchange_rate: RealtimeCurrencyExchangeRate,
+    Success(RealtimeCurrencyExchangeRate),
+
+    /// Error response
+    #[serde(rename = "Note")]
+    Error(String),
 }
 
 #[derive(Serialize, Deserialize)]
