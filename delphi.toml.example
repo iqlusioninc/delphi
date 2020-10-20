@@ -1,6 +1,12 @@
 # Example Delphi configuration file
 
-# HTTPS configuration
+# Listen address configuration
+[listen]
+addr = "127.0.0.1"
+port = 3822
+protocol = "http"
+
+# HTTPS client configuration
 # [https]
 # proxy = "https://webproxy.example.com:8080" # send outgoing requests through proxy
 
