@@ -5,9 +5,8 @@ use super::{
     msg::{self, MsgAggregateExchangeRateVote},
     MEMO, SCHEMA,
 };
-use crate::{application::app_config, config::DelphiConfig, prelude::*, sources::Sources, Error};
+use crate::{config::DelphiConfig, prelude::*, router::Request, sources::Sources, Error};
 use futures::future::join_all;
-use serde::Deserialize;
 use serde_json::json;
 use std::{
     convert::Infallible,
@@ -15,8 +14,7 @@ use std::{
     time::{Duration, Instant},
 };
 use stdtx::{amino_types::StdFee, Address};
-use tendermint::chain;
-use tendermint_rpc::endpoint::{broadcast::tx_commit, status::SyncInfo};
+use tendermint_rpc::endpoint::broadcast::tx_commit;
 use tokio::{sync::Mutex, time::timeout};
 use warp::http::StatusCode;
 
@@ -29,16 +27,9 @@ pub struct ExchangeRateOracle(Arc<Mutex<OracleState>>);
 
 impl ExchangeRateOracle {
     /// Create a new [`ExchangeRateOracle`]
-    pub fn new() -> Self {
-        let state = {
-            let config = app_config();
-            OracleState::new(&config).unwrap_or_else(|e| {
-                // TODO(tarcieri): better error handling?
-                panic!("error initializing Terra oracle: {}", e);
-            })
-        };
-
-        ExchangeRateOracle(Arc::new(Mutex::new(state)))
+    pub fn new(config: &DelphiConfig) -> Result<Self, Error> {
+        let state = OracleState::new(&config)?;
+        Ok(ExchangeRateOracle(Arc::new(Mutex::new(state))))
     }
 
     /// Handle an incoming oracle request, providing a set of transactions to
@@ -167,29 +158,6 @@ impl ExchangeRateOracle {
         let state = self.0.lock().await;
         state.fee.clone()
     }
-}
-
-impl Default for ExchangeRateOracle {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-/// Request data
-#[derive(Clone, Debug, Deserialize)]
-pub struct Request {
-    /// Chain ID
-    pub network: chain::Id,
-
-    /// Arbitrary context string to pass to transaction source
-    #[serde(default)]
-    pub context: String,
-
-    /// Network status
-    pub status: Option<SyncInfo>,
-
-    /// Response from last signed TX (if available)
-    pub last_tx_response: Option<tx_commit::Response>,
 }
 
 /// Inner (synchronized) oracle state

@@ -5,10 +5,13 @@
 //! for specifying it.
 
 pub mod https;
+pub mod listen;
 pub mod network;
 pub mod source;
 
-pub use self::{https::HttpsConfig, network::NetworkConfig, source::SourceConfig};
+pub use self::{
+    https::HttpsConfig, listen::ListenConfig, network::NetworkConfig, source::SourceConfig,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -16,11 +19,15 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct DelphiConfig {
-    /// HTTPS configuration
+    /// Listen configuration
+    #[serde(default)]
+    pub listen: ListenConfig,
+
+    /// HTTPS client configuration
     #[serde(default)]
     pub https: HttpsConfig,
 
-    /// Network configuration
+    /// Network (i.e. chain) configuration
     #[serde(default)]
     pub network: NetworkConfig,
 
