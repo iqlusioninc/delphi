@@ -18,7 +18,7 @@ categories  = ["cryptography::cryptocurrencies"]
 [dependencies]
 abscissa_core = "0.5"
 abscissa_tokio = "0.5"
-bytes = "0.5"
+bytes = "0.6"
 gumdrop = "0.7"
 http = "0.2"
 hyper = "0.13"
