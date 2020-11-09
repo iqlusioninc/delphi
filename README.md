@@ -8,6 +8,12 @@
 
 Oracle feeder service (presently supporting [Terra])
 
+## Code of Conduct
+
+We abide by the [Contributor Covenant][cc] and ask that you do as well.
+
+For more information, please see [CODE_OF_CONDUCT.md].
+
 ## License
 
 Copyright © 2019 iqlusion
@@ -38,4 +44,6 @@ limitations under the License.
 
 [//]: # (general links)
 
+[cc]: https://contributor-covenant.org
+[CODE_OF_CONDUCT.md]: https://github.com/iqlusioninc/delphi/blob/develop/CODE_OF_CONDUCT.md
 [Terra]: https://terra.money/
