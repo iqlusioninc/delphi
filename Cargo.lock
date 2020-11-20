@@ -2179,9 +2179,9 @@ dependencies = [
 
 [[package]]
 name = "tendermint-rpc"
-version = "0.17.0-rc2"
+version = "0.17.0-rc3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7fe6420a7c17e890c3c3744afa2908efbb4effb0832ecb0570929b33f79f73a"
+checksum = "503c9c219e578a862a7dc0e9af8766c98a86e3cb7d4cc6f369dfce4e475d0001"
 dependencies = [
  "bytes",
  "chrono",
