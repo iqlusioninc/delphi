@@ -6,12 +6,12 @@ use super::{
     MEMO, SCHEMA,
 };
 use crate::{config::DelphiConfig, prelude::*, router::Request, sources::Sources, Error};
-use std::collections::BTreeMap;
-use datadog::Event;
 use datadog::send_event;
-use std::env;
+use datadog::Event;
 use futures::future::join_all;
 use serde_json::json;
+use std::collections::BTreeMap;
+use std::env;
 use std::{
     convert::Infallible,
     sync::Arc,
@@ -92,31 +92,26 @@ impl ExchangeRateOracle {
         let rates = match timeout(state.timeout, join_all(exchange_rate_fut)).await {
             Ok(res) => res,
             Err(e) => {
- 
                 let dd_api_key = env::var("DD_API_KEY").unwrap();
                 let mut ddtags = BTreeMap::new();
                 ddtags.insert("env".to_owned(), "staging".to_owned());
                 ddtags.insert("user".to_owned(), "delphi_crate".to_owned());
-                
-                
+
                 let event = Event {
                     ddsource: "delphi_crate".to_owned(),
                     service: "delphi_crate".to_owned(),
                     ddtags: ddtags,
                     hostname: "127.0.0.1".to_owned(),
-                    message: format!("oracle vote timed out after {:?}: {}", state.timeout, e)
+                    message: format!("oracle vote timed out after {:?}: {}", state.timeout, e),
                 };
 
                 warn!("oracle vote timed out after {:?}: {}", state.timeout, e);
-                
-                match send_event(&event, dd_api_key).await{
-                    Ok(_) => (),
-                    Err(e)=> {
-                        warn!("Datadog event failed {:?}", e)
-                    }
 
+                match send_event(&event, dd_api_key).await {
+                    Ok(_) => (),
+                    Err(e) => warn!("Datadog event failed {:?}", e),
                 }
-                
+
                 return vec![];
             }
         };
