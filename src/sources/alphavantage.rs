@@ -59,6 +59,7 @@ impl AlphavantageSource {
         };
 
         let query = params.to_request_uri();
+        // dbg!(&self.apikey);
         match self.https_client.get_json("/query", &query).await? {
             Response::Success(resp) => Ok(resp.exchange_rate),
             Response::Error(msg) => fail!(ErrorKind::Source, "Alpha Vantage error: {}", msg),

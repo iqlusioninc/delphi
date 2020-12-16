@@ -100,7 +100,7 @@ impl ExchangeRateOracle {
                 let event = Event {
                     ddsource: "delphi_crate".to_owned(),
                     service: "delphi_crate".to_owned(),
-                    ddtags: ddtags,
+                    ddtags,
                     hostname: "127.0.0.1".to_owned(),
                     message: format!("oracle vote timed out after {:?}: {}", state.timeout, e),
                 };
@@ -120,9 +120,31 @@ impl ExchangeRateOracle {
             match rate {
                 Ok(rate) => exchange_rates.add(*denom, *rate).expect("duplicate denom"),
                 Err(err) => {
+
+                    let dd_api_key = env::var("DD_API_KEY").unwrap();
+                    let mut ddtags = BTreeMap::new();
+                    ddtags.insert("env".to_owned(), "staging".to_owned());
+                    ddtags.insert("user".to_owned(), "delphi_crate".to_owned());
+
+                let event = Event {
+                    ddsource: "delphi_crate".to_owned(),
+                    service: "delphi_crate".to_owned(),
+                    ddtags,
+                    hostname: "127.0.0.1".to_owned(),
+                    message: format!("error getting exchange rate for {}: {}", denom, err),
+                };
+
                     error!("error getting exchange rate for {}: {}", denom, err);
+
+                    match send_event(&event, dd_api_key).await {
+                        Ok(_) => (),
+                        Err(e) => warn!("Datadog event failed {:?}", e),
+                    }
+
                     continue;
                 }
+
+
             };
         }
 
