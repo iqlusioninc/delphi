@@ -103,7 +103,7 @@ impl ExchangeRateOracle {
                     Err(e) => warn!("Datadog event failed {:?}", e),
                 }
 
-                return vec![];
+                return vec![];  
             }
         };
 
