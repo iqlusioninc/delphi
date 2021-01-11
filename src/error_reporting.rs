@@ -16,7 +16,7 @@ pub async fn datadog_err(message: String) -> Result<(), Error> {
     let event = Event {
         ddsource: "delphi".to_owned(),
         service: "delphi".to_owned(),
-        ddtags: ddtags,
+        ddtags,
         hostname: "127.0.0.1".to_owned(),
         message,
     };
