@@ -93,6 +93,7 @@ impl ExchangeRateOracle {
             Err(e) => {
                 warn!("oracle vote timed out after {:?}: {}", state.timeout, e);
 
+              #[cfg(feature = "datadog")]
                 match datadog_err(format!(
                     "oracle vote timed out after {:?}: {}",
                     state.timeout, e
