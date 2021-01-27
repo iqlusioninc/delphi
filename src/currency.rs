@@ -136,7 +136,7 @@ impl Currency {
             Currency::Btc => "N/A".to_string(),
             Currency::Busd => "N/A".to_string(),
             Currency::Eth => "N/A".to_string(),
-            Currency::Eur => "N/A".to_string(),
+            Currency::Eur => "EUR".to_string(),
             Currency::Gbp => "N/A".to_string(),
             Currency::Usdc => "N/A".to_string(),
             Currency::Usdt => "N/A".to_string(),

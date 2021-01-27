@@ -30,12 +30,21 @@ pub enum Denom {
 
     /// US Dollars
     UUSD,
+
+    /// Euro
+    UEUR,
 }
 
 impl Denom {
     /// Get a slice of the [`Denom`] kinds
     pub fn kinds() -> &'static [Denom] {
-        &[Denom::UKRW, Denom::UMNT, Denom::USDR, Denom::UUSD]
+        &[
+            Denom::UKRW,
+            Denom::UMNT,
+            Denom::USDR,
+            Denom::UUSD,
+            Denom::UEUR,
+        ]
     }
 
     /// Get the code corresponding to a [`Denom`]
@@ -45,6 +54,7 @@ impl Denom {
             Denom::UMNT => "umnt",
             Denom::USDR => "usdr",
             Denom::UUSD => "uusd",
+            Denom::UEUR => "ueur",
         }
     }
 
@@ -123,6 +133,22 @@ impl Denom {
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
                 luna_sdr.rescale(18);
                 Ok(luna_sdr.try_into()?)
+            }
+
+            Denom::UEUR => {
+                let (alphavantage_response_usd, binance_response) = try_join!(
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Eur)),
+                    sources
+                        .binance
+                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+                )?;
+
+                let mut luna_eur = Decimal::from(binance_response * alphavantage_response_usd);
+
+                luna_eur.rescale(18);
+                Ok(luna_eur.try_into()?)
             }
         }
     }
