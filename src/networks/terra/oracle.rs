@@ -5,7 +5,10 @@ use super::{
     msg::{self, MsgAggregateExchangeRateVote},
     MEMO, SCHEMA,
 };
-use crate::{config::DelphiConfig, prelude::*, router::Request, sources::Sources, Error};
+use crate::{
+    config::DelphiConfig, error_reporting::datadog_err, prelude::*, router::Request,
+    sources::Sources, Error,
+};
 use futures::future::join_all;
 use serde_json::json;
 use std::{
@@ -89,6 +92,18 @@ impl ExchangeRateOracle {
             Ok(res) => res,
             Err(e) => {
                 warn!("oracle vote timed out after {:?}: {}", state.timeout, e);
+
+                #[cfg(feature = "datadog")]
+                match datadog_err(format!(
+                    "oracle vote timed out after {:?}: {}",
+                    state.timeout, e
+                ))
+                .await
+                {
+                    Ok(_) => (),
+                    Err(e) => warn!("Datadog event failed {:?}", e),
+                }
+
                 return vec![];
             }
         };
@@ -98,6 +113,17 @@ impl ExchangeRateOracle {
                 Ok(rate) => exchange_rates.add(*denom, *rate).expect("duplicate denom"),
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
+
+                    match datadog_err(format!(
+                        "error getting exchange rate for {}: {}",
+                        denom, err
+                    ))
+                    .await
+                    {
+                        Ok(_) => (),
+                        Err(e) => warn!("Datadog event failed {:?}", e),
+                    }
+
                     continue;
                 }
             };
