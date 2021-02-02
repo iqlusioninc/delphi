@@ -58,6 +58,9 @@ pub enum Currency {
     ///Chinese Yuan
     Cny,
 
+    ///Japanese Yen
+    Jpy,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -82,6 +85,7 @@ impl Display for Currency {
             Currency::Sdr => "SDR",
             Currency::Mnt => "MNT",
             Currency::Cny => "CNY",
+            Currency::Jpy => "JPY",
         })
     }
 }
@@ -106,6 +110,7 @@ impl FromStr for Currency {
             "USDT" => Currency::Usdt,
             "SDR" => Currency::Sdr,
             "CNY" => Currency::Cny,
+            "JPY" => Currency::Jpy,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -147,6 +152,7 @@ impl Currency {
             Currency::Usdt => "N/A".to_string(),
             Currency::Mnt => "N/A".to_string(),
             Currency::Cny => "N/A".to_string(),
+            Currency::Jpy => "N/A".to_string(),
         }
     }
 }

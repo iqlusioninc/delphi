@@ -36,6 +36,9 @@ pub enum Denom {
 
     /// Chinese Yuan
     UCNY,
+
+    /// Japanese Yen
+    UJPY,
 }
 
 impl Denom {
@@ -48,6 +51,7 @@ impl Denom {
             Denom::UUSD,
             Denom::UEUR,
             Denom::UCNY,
+            Denom::UJPY,
         ]
     }
 
@@ -60,6 +64,7 @@ impl Denom {
             Denom::UUSD => "uusd",
             Denom::UEUR => "ueur",
             Denom::UCNY => "ucny",
+            Denom::UJPY => "ujpy",
         }
     }
 
@@ -171,6 +176,22 @@ impl Denom {
                 luna_cny.rescale(18);
                 Ok(luna_cny.try_into()?)
             }
+
+            Denom::UJPY => {
+                let (alphavantage_response_usd, binance_response) = try_join!(
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Jpy)),
+                    sources
+                        .binance
+                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+                )?;
+
+                let mut luna_jpy = Decimal::from(binance_response * alphavantage_response_usd);
+
+                luna_jpy.rescale(18);
+                Ok(luna_jpy.try_into()?)
+            }
         }
     }
 }
@@ -192,6 +213,7 @@ impl FromStr for Denom {
             "uusd" => Ok(Denom::UUSD),
             "ueur" => Ok(Denom::UEUR),
             "ucny" => Ok(Denom::UCNY),
+            "ujpy" => Ok(Denom::UJPY),
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }
     }
