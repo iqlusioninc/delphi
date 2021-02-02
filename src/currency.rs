@@ -55,6 +55,9 @@ pub enum Currency {
     /// Mongolian Tugrik
     Mnt,
 
+    ///Chinese Yuan
+    Cny,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -78,6 +81,7 @@ impl Display for Currency {
             Currency::Other(other) => other.as_ref(),
             Currency::Sdr => "SDR",
             Currency::Mnt => "MNT",
+            Currency::Cny => "CNY",
         })
     }
 }
@@ -101,6 +105,7 @@ impl FromStr for Currency {
             "USDC" => Currency::Usdc,
             "USDT" => Currency::Usdt,
             "SDR" => Currency::Sdr,
+            "CNY" => Currency::Cny,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -141,6 +146,7 @@ impl Currency {
             Currency::Usdc => "N/A".to_string(),
             Currency::Usdt => "N/A".to_string(),
             Currency::Mnt => "N/A".to_string(),
+            Currency::Cny => "N/A".to_string(),
         }
     }
 }
