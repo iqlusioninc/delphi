@@ -48,6 +48,9 @@ pub enum Denom {
 
     ///Canadian Dollar
     UCAD,
+
+    ///Swiss Franc
+    UCHF,
 }
 
 impl Denom {
@@ -64,6 +67,7 @@ impl Denom {
             Denom::UGBP,
             Denom::UINR,
             Denom::UCAD,
+            Denom::UCHF,
         ]
     }
 
@@ -80,6 +84,7 @@ impl Denom {
             Denom::UGBP => "ugbp",
             Denom::UINR => "uinr",
             Denom::UCAD => "ucad",
+            Denom::UCHF => "uchf",
         }
     }
 
@@ -255,6 +260,22 @@ impl Denom {
                 luna_cad.rescale(18);
                 Ok(luna_cad.try_into()?)
             }
+
+            Denom::UCHF => {
+                let (alphavantage_response_usd, binance_response) = try_join!(
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Chf)),
+                    sources
+                        .binance
+                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+                )?;
+
+                let mut luna_chf = Decimal::from(binance_response * alphavantage_response_usd);
+
+                luna_chf.rescale(18);
+                Ok(luna_chf.try_into()?)
+            }
         }
     }
 }
@@ -280,6 +301,7 @@ impl FromStr for Denom {
             "ugbp" => Ok(Denom::UGBP),
             "uinr" => Ok(Denom::UINR),
             "ucad" => Ok(Denom::UCAD),
+            "uchf" => Ok(Denom::UCHF),
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }
     }

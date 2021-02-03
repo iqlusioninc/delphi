@@ -28,6 +28,9 @@ pub enum Currency {
     ///Canadian Dollar
     Cad,
 
+    ///Swiss Franc
+    Chf,
+
     ///Chinese Yuan
     Cny,
 
@@ -79,6 +82,8 @@ impl Display for Currency {
             Currency::Bkrw => "BKRW",
             Currency::Btc => "BTC",
             Currency::Busd => "BUSD",
+            Currency::Cad => "CAD",
+            Currency::Chf => "CHF",
             Currency::Eth => "ETH",
             Currency::Eur => "EUR",
             Currency::Gbp => "GBP",
@@ -93,7 +98,6 @@ impl Display for Currency {
             Currency::Cny => "CNY",
             Currency::Jpy => "JPY",
             Currency::Inr => "INR",
-            Currency::Cad => "CAD",
         })
     }
 }
@@ -121,6 +125,7 @@ impl FromStr for Currency {
             "JPY" => Currency::Jpy,
             "INR" => Currency::Inr,
             "CAD" => Currency::Cad,
+            "CHF" => Currency::Chf,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -165,6 +170,7 @@ impl Currency {
             Currency::Jpy => "N/A".to_string(),
             Currency::Inr => "N/A".to_string(),
             Currency::Cad => "N/A".to_string(),
+            Currency::Chf => "N/A".to_string(),
         }
     }
 }
