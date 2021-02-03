@@ -13,6 +13,9 @@ pub enum Currency {
     /// Cosmos Atom
     Atom,
 
+    ///Australian Dollar
+    Aud,
+
     /// Binance Coin
     Bnb,
 
@@ -102,6 +105,7 @@ impl Display for Currency {
             Currency::Jpy => "JPY",
             Currency::Inr => "INR",
             Currency::Hkd => "HKD",
+            Currency::Aud => "AUD",
         })
     }
 }
@@ -131,6 +135,7 @@ impl FromStr for Currency {
             "CAD" => Currency::Cad,
             "CHF" => Currency::Chf,
             "HKD" => Currency::Hkd,
+            "AUD" => Currency::Aud,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -177,6 +182,7 @@ impl Currency {
             Currency::Cad => "N/A".to_string(),
             Currency::Chf => "N/A".to_string(),
             Currency::Hkd => "N/A".to_string(),
+            Currency::Aud => "N/A".to_string(),
         }
     }
 }
