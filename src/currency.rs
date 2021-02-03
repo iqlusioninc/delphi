@@ -25,6 +25,12 @@ pub enum Currency {
     /// Binance USD stablecoin
     Busd,
 
+    ///Canadian Dollar
+    Cad,
+
+    ///Chinese Yuan
+    Cny,
+
     /// Ethereum
     Eth,
 
@@ -34,11 +40,23 @@ pub enum Currency {
     /// UK Pounds
     Gbp,
 
+    ///Indian Rupee
+    Inr,
+
+    ///Japanese Yen
+    Jpy,
+
     /// South Korean won
     Krw,
 
     /// Terra Luna
     Luna,
+
+    /// Mongolian Tugrik
+    Mnt,
+
+    /// IMF Special Drawing Rights
+    Sdr,
 
     /// US dollars
     Usd,
@@ -48,21 +66,6 @@ pub enum Currency {
 
     /// Tether USDT stablecoin
     Usdt,
-
-    /// IMF Special Drawing Rights
-    Sdr,
-
-    /// Mongolian Tugrik
-    Mnt,
-
-    ///Chinese Yuan
-    Cny,
-
-    ///Japanese Yen
-    Jpy,
-
-    ///Indian Rupee
-    Inr,
 
     /// Other (open-ended)
     Other(String),
@@ -90,6 +93,7 @@ impl Display for Currency {
             Currency::Cny => "CNY",
             Currency::Jpy => "JPY",
             Currency::Inr => "INR",
+            Currency::Cad => "CAD",
         })
     }
 }
@@ -116,6 +120,7 @@ impl FromStr for Currency {
             "CNY" => Currency::Cny,
             "JPY" => Currency::Jpy,
             "INR" => Currency::Inr,
+            "CAD" => Currency::Cad,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -159,6 +164,7 @@ impl Currency {
             Currency::Cny => "N/A".to_string(),
             Currency::Jpy => "N/A".to_string(),
             Currency::Inr => "N/A".to_string(),
+            Currency::Cad => "N/A".to_string(),
         }
     }
 }
