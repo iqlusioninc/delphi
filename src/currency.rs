@@ -43,6 +43,9 @@ pub enum Currency {
     /// UK Pounds
     Gbp,
 
+    ///Hong Kong Dollar
+    Hkd,
+
     ///Indian Rupee
     Inr,
 
@@ -98,6 +101,7 @@ impl Display for Currency {
             Currency::Cny => "CNY",
             Currency::Jpy => "JPY",
             Currency::Inr => "INR",
+            Currency::Hkd => "HKD",
         })
     }
 }
@@ -126,6 +130,7 @@ impl FromStr for Currency {
             "INR" => Currency::Inr,
             "CAD" => Currency::Cad,
             "CHF" => Currency::Chf,
+            "HKD" => Currency::Hkd,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -171,6 +176,7 @@ impl Currency {
             Currency::Inr => "N/A".to_string(),
             Currency::Cad => "N/A".to_string(),
             Currency::Chf => "N/A".to_string(),
+            Currency::Hkd => "N/A".to_string(),
         }
     }
 }

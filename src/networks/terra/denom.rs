@@ -51,6 +51,9 @@ pub enum Denom {
 
     ///Swiss Franc
     UCHF,
+
+    ///Hong Kong Dollar
+    UHKD,
 }
 
 impl Denom {
@@ -68,6 +71,7 @@ impl Denom {
             Denom::UINR,
             Denom::UCAD,
             Denom::UCHF,
+            Denom::UHKD,
         ]
     }
 
@@ -85,6 +89,7 @@ impl Denom {
             Denom::UINR => "uinr",
             Denom::UCAD => "ucad",
             Denom::UCHF => "uchf",
+            Denom::UHKD => "uhkd",
         }
     }
 
@@ -275,6 +280,22 @@ impl Denom {
 
                 luna_chf.rescale(18);
                 Ok(luna_chf.try_into()?)
+            }
+
+            Denom::UHKD => {
+                let (alphavantage_response_usd, binance_response) = try_join!(
+                    sources
+                        .alphavantage
+                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Hkd)),
+                    sources
+                        .binance
+                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+                )?;
+
+                let mut luna_hkd = Decimal::from(binance_response * alphavantage_response_usd);
+
+                luna_hkd.rescale(18);
+                Ok(luna_hkd.try_into()?)
             }
         }
     }
