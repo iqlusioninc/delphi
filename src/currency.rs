@@ -67,6 +67,9 @@ pub enum Currency {
     /// IMF Special Drawing Rights
     Sdr,
 
+    ///Singapore Dollar
+    Sgd,
+
     /// US dollars
     Usd,
 
@@ -106,6 +109,7 @@ impl Display for Currency {
             Currency::Inr => "INR",
             Currency::Hkd => "HKD",
             Currency::Aud => "AUD",
+            Currency::Sgd => "SGD",
         })
     }
 }
@@ -136,6 +140,7 @@ impl FromStr for Currency {
             "CHF" => Currency::Chf,
             "HKD" => Currency::Hkd,
             "AUD" => Currency::Aud,
+            "SGD" => Currency::Sgd,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -183,6 +188,7 @@ impl Currency {
             Currency::Chf => "N/A".to_string(),
             Currency::Hkd => "N/A".to_string(),
             Currency::Aud => "N/A".to_string(),
+            Currency::Sgd => "N/A".to_string(),
         }
     }
 }
