@@ -180,167 +180,43 @@ impl Denom {
                 Ok(luna_sdr.try_into()?)
             }
 
-            Denom::UEUR => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Eur)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
+            Denom::UEUR => luna_rate_via_usd(sources, Currency::Eur).await,
 
-                let mut luna_eur = Decimal::from(binance_response * alphavantage_response_usd);
+            Denom::UCNY => luna_rate_via_usd(sources, Currency::Cny).await,
 
-                luna_eur.rescale(18);
-                Ok(luna_eur.try_into()?)
-            }
+            Denom::UJPY => luna_rate_via_usd(sources, Currency::Jpy).await,
 
-            Denom::UCNY => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Cny)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
+            Denom::UGBP => luna_rate_via_usd(sources, Currency::Gbp).await,
 
-                let mut luna_cny = Decimal::from(binance_response * alphavantage_response_usd);
+            Denom::UINR => luna_rate_via_usd(sources, Currency::Inr).await,
 
-                luna_cny.rescale(18);
-                Ok(luna_cny.try_into()?)
-            }
+            Denom::UCAD => luna_rate_via_usd(sources, Currency::Cad).await,
 
-            Denom::UJPY => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Jpy)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
+            Denom::UCHF => luna_rate_via_usd(sources, Currency::Chf).await,
 
-                let mut luna_jpy = Decimal::from(binance_response * alphavantage_response_usd);
+            Denom::UHKD => luna_rate_via_usd(sources, Currency::Hkd).await,
 
-                luna_jpy.rescale(18);
-                Ok(luna_jpy.try_into()?)
-            }
+            Denom::UAUD => luna_rate_via_usd(sources, Currency::Aud).await,
 
-            Denom::UGBP => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Gbp)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_gbp = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_gbp.rescale(18);
-                Ok(luna_gbp.try_into()?)
-            }
-
-            Denom::UINR => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Inr)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_inr = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_inr.rescale(18);
-                Ok(luna_inr.try_into()?)
-            }
-
-            Denom::UCAD => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Cad)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_cad = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_cad.rescale(18);
-                Ok(luna_cad.try_into()?)
-            }
-
-            Denom::UCHF => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Chf)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_chf = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_chf.rescale(18);
-                Ok(luna_chf.try_into()?)
-            }
-
-            Denom::UHKD => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Hkd)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_hkd = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_hkd.rescale(18);
-                Ok(luna_hkd.try_into()?)
-            }
-
-            Denom::UAUD => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Aud)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_aud = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_aud.rescale(18);
-                Ok(luna_aud.try_into()?)
-            }
-
-            Denom::USGD => {
-                let (alphavantage_response_usd, binance_response) = try_join!(
-                    sources
-                        .alphavantage
-                        .trading_pairs(&TradingPair(Currency::Usd, Currency::Sgd)),
-                    sources
-                        .binance
-                        .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
-                )?;
-
-                let mut luna_sgd = Decimal::from(binance_response * alphavantage_response_usd);
-
-                luna_sgd.rescale(18);
-                Ok(luna_sgd.try_into()?)
-            }
+            Denom::USGD => luna_rate_via_usd(sources, Currency::Sgd).await,
         }
     }
+}
+
+async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::Decimal, Error> {
+    let pair_1 = TradingPair(Currency::Usd, cur);
+
+    let (alphavantage_response_usd, binance_response) = try_join!(
+        sources.alphavantage.trading_pairs(&pair_1),
+        sources
+            .binance
+            .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
+    )?;
+
+    let mut luna_cur = Decimal::from(binance_response * alphavantage_response_usd);
+
+    luna_cur.rescale(18);
+    Ok(luna_cur.try_into()?)
 }
 
 impl Display for Denom {
