@@ -1,5 +1,6 @@
 //! Currency support (i.e. assets)
 
+use crate::networks::terra::denom::Denom;
 use crate::Error;
 use serde::{de, ser, Deserialize, Serialize};
 use std::{
@@ -143,6 +144,27 @@ impl FromStr for Currency {
             "SGD" => Currency::Sgd,
             other => Currency::Other(other.to_owned()),
         })
+    }
+}
+
+impl From<Denom> for Currency {
+    fn from(denom: Denom) -> Currency {
+        match denom {
+            Denom::UEUR => Currency::Eur,
+            Denom::UCNY => Currency::Cny,
+            Denom::UJPY => Currency::Jpy,
+            Denom::UGBP => Currency::Gbp,
+            Denom::UINR => Currency::Inr,
+            Denom::UCAD => Currency::Cad,
+            Denom::UCHF => Currency::Chf,
+            Denom::UHKD => Currency::Hkd,
+            Denom::UAUD => Currency::Aud,
+            Denom::USGD => Currency::Sgd,
+            Denom::UKRW => Currency::Krw,
+            Denom::UMNT => Currency::Mnt,
+            Denom::USDR => Currency::Sdr,
+            Denom::UUSD => Currency::Usd,
+        }
     }
 }
 

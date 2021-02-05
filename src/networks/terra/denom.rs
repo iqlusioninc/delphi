@@ -180,25 +180,25 @@ impl Denom {
                 Ok(luna_sdr.try_into()?)
             }
 
-            Denom::UEUR => luna_rate_via_usd(sources, Currency::Eur).await,
+            Denom::UEUR => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UCNY => luna_rate_via_usd(sources, Currency::Cny).await,
+            Denom::UCNY => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UJPY => luna_rate_via_usd(sources, Currency::Jpy).await,
+            Denom::UJPY => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UGBP => luna_rate_via_usd(sources, Currency::Gbp).await,
+            Denom::UGBP => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UINR => luna_rate_via_usd(sources, Currency::Inr).await,
+            Denom::UINR => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UCAD => luna_rate_via_usd(sources, Currency::Cad).await,
+            Denom::UCAD => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UCHF => luna_rate_via_usd(sources, Currency::Chf).await,
+            Denom::UCHF => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UHKD => luna_rate_via_usd(sources, Currency::Hkd).await,
+            Denom::UHKD => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::UAUD => luna_rate_via_usd(sources, Currency::Aud).await,
+            Denom::UAUD => luna_rate_via_usd(sources, self.into()).await,
 
-            Denom::USGD => luna_rate_via_usd(sources, Currency::Sgd).await,
+            Denom::USGD => luna_rate_via_usd(sources, self.into()).await,
         }
     }
 }
