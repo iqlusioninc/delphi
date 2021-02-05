@@ -180,11 +180,7 @@ impl Denom {
                 Ok(luna_sdr.try_into()?)
             }
 
-            Denom::UEUR => luna_rate_via_usd(sources, self.into()).await,
-
-            Denom::UCNY => luna_rate_via_usd(sources, self.into()).await,
-
-            _ => luna_rate_via_usd(sources, self.into()).await
+            _ => luna_rate_via_usd(sources, self.into()).await,
         }
     }
 }
