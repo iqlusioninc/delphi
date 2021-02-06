@@ -1,5 +1,6 @@
 //! Currency support (i.e. assets)
 
+use crate::networks::terra::denom::Denom;
 use crate::Error;
 use serde::{de, ser, Deserialize, Serialize};
 use std::{
@@ -13,6 +14,9 @@ pub enum Currency {
     /// Cosmos Atom
     Atom,
 
+    ///Australian Dollar
+    Aud,
+
     /// Binance Coin
     Bnb,
 
@@ -25,6 +29,15 @@ pub enum Currency {
     /// Binance USD stablecoin
     Busd,
 
+    ///Canadian Dollar
+    Cad,
+
+    ///Swiss Franc
+    Chf,
+
+    ///Chinese Yuan
+    Cny,
+
     /// Ethereum
     Eth,
 
@@ -34,11 +47,29 @@ pub enum Currency {
     /// UK Pounds
     Gbp,
 
+    ///Hong Kong Dollar
+    Hkd,
+
+    ///Indian Rupee
+    Inr,
+
+    ///Japanese Yen
+    Jpy,
+
     /// South Korean won
     Krw,
 
     /// Terra Luna
     Luna,
+
+    /// Mongolian Tugrik
+    Mnt,
+
+    /// IMF Special Drawing Rights
+    Sdr,
+
+    ///Singapore Dollar
+    Sgd,
 
     /// US dollars
     Usd,
@@ -48,12 +79,6 @@ pub enum Currency {
 
     /// Tether USDT stablecoin
     Usdt,
-
-    /// IMF Special Drawing Rights
-    Sdr,
-
-    /// Mongolian Tugrik
-    Mnt,
 
     /// Other (open-ended)
     Other(String),
@@ -67,6 +92,8 @@ impl Display for Currency {
             Currency::Bkrw => "BKRW",
             Currency::Btc => "BTC",
             Currency::Busd => "BUSD",
+            Currency::Cad => "CAD",
+            Currency::Chf => "CHF",
             Currency::Eth => "ETH",
             Currency::Eur => "EUR",
             Currency::Gbp => "GBP",
@@ -78,6 +105,12 @@ impl Display for Currency {
             Currency::Other(other) => other.as_ref(),
             Currency::Sdr => "SDR",
             Currency::Mnt => "MNT",
+            Currency::Cny => "CNY",
+            Currency::Jpy => "JPY",
+            Currency::Inr => "INR",
+            Currency::Hkd => "HKD",
+            Currency::Aud => "AUD",
+            Currency::Sgd => "SGD",
         })
     }
 }
@@ -101,8 +134,37 @@ impl FromStr for Currency {
             "USDC" => Currency::Usdc,
             "USDT" => Currency::Usdt,
             "SDR" => Currency::Sdr,
+            "CNY" => Currency::Cny,
+            "JPY" => Currency::Jpy,
+            "INR" => Currency::Inr,
+            "CAD" => Currency::Cad,
+            "CHF" => Currency::Chf,
+            "HKD" => Currency::Hkd,
+            "AUD" => Currency::Aud,
+            "SGD" => Currency::Sgd,
             other => Currency::Other(other.to_owned()),
         })
+    }
+}
+
+impl From<Denom> for Currency {
+    fn from(denom: Denom) -> Currency {
+        match denom {
+            Denom::UEUR => Currency::Eur,
+            Denom::UCNY => Currency::Cny,
+            Denom::UJPY => Currency::Jpy,
+            Denom::UGBP => Currency::Gbp,
+            Denom::UINR => Currency::Inr,
+            Denom::UCAD => Currency::Cad,
+            Denom::UCHF => Currency::Chf,
+            Denom::UHKD => Currency::Hkd,
+            Denom::UAUD => Currency::Aud,
+            Denom::USGD => Currency::Sgd,
+            Denom::UKRW => Currency::Krw,
+            Denom::UMNT => Currency::Mnt,
+            Denom::USDR => Currency::Sdr,
+            Denom::UUSD => Currency::Usd,
+        }
     }
 }
 
@@ -141,6 +203,14 @@ impl Currency {
             Currency::Usdc => "N/A".to_string(),
             Currency::Usdt => "N/A".to_string(),
             Currency::Mnt => "N/A".to_string(),
+            Currency::Cny => "N/A".to_string(),
+            Currency::Jpy => "N/A".to_string(),
+            Currency::Inr => "N/A".to_string(),
+            Currency::Cad => "N/A".to_string(),
+            Currency::Chf => "N/A".to_string(),
+            Currency::Hkd => "N/A".to_string(),
+            Currency::Aud => "N/A".to_string(),
+            Currency::Sgd => "N/A".to_string(),
         }
     }
 }
