@@ -71,6 +71,9 @@ pub enum Currency {
     ///Singapore Dollar
     Sgd,
 
+    ///Thai baht
+    Thb,
+
     /// US dollars
     Usd,
 
@@ -111,6 +114,7 @@ impl Display for Currency {
             Currency::Hkd => "HKD",
             Currency::Aud => "AUD",
             Currency::Sgd => "SGD",
+            Currency::Thb => "THB",
         })
     }
 }
@@ -142,6 +146,7 @@ impl FromStr for Currency {
             "HKD" => Currency::Hkd,
             "AUD" => Currency::Aud,
             "SGD" => Currency::Sgd,
+            "THB" => Currency::Thb,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -164,6 +169,7 @@ impl From<Denom> for Currency {
             Denom::UMNT => Currency::Mnt,
             Denom::USDR => Currency::Sdr,
             Denom::UUSD => Currency::Usd,
+            Denom::UTHB => Currency::Thb,
         }
     }
 }
@@ -211,6 +217,7 @@ impl Currency {
             Currency::Hkd => "N/A".to_string(),
             Currency::Aud => "N/A".to_string(),
             Currency::Sgd => "N/A".to_string(),
+            Currency::Thb => "N/A".to_string(),
         }
     }
 }
