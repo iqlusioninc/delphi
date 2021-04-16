@@ -49,7 +49,7 @@ pub struct TerraOracleFee {
 impl Default for TerraOracleFee {
     fn default() -> Self {
         Self {
-            denom: Denom::UKRW,
+            denom: Denom::Ukrw,
             amount: 356_100,
             gas: 200_000,
         }

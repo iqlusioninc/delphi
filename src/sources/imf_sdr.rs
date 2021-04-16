@@ -21,18 +21,18 @@ pub const API_HOST: &str = "www.imf.org";
 
 /// The IMF returns tab seperated data is form that is designed to for
 
-pub struct ImfSDRSource {
+pub struct ImfSdrSource {
     https_client: HttpsClient,
 }
 /// importing into Excel spreadsheets rather than being machine
 /// friendly.record. The TSV data has irregular structure.
 /// The strategy here is to find the subsection of data we are
-/// looking for by trying to deserialize each row into IMFSDRRow and
+/// looking for by trying to deserialize each row into ImfsdrRow and
 /// ignoring deserialization errors. The IMF provides data for the
 /// last 5 days but data may no be available for all days.
 
 #[derive(Debug, Deserialize)]
-struct IMFSDRRow {
+struct ImfsdrRow {
     currency: String,
     price_0: Option<Price>,
     price_1: Option<Price>,
@@ -41,7 +41,7 @@ struct IMFSDRRow {
     price_4: Option<Price>,
 }
 
-impl IMFSDRRow {
+impl ImfsdrRow {
     /// Best price is the most recent price. Use
     fn response_from_best_price(&self) -> Option<Response> {
         if let Some(ref price) = self.price_0 {
@@ -63,7 +63,7 @@ impl IMFSDRRow {
     }
 }
 
-impl ImfSDRSource {
+impl ImfSdrSource {
     /// Create a new Dunamu source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
         let https_client = HttpsClient::new(API_HOST, config)?;
@@ -105,14 +105,14 @@ impl ImfSDRSource {
             .delimiter(b'\t')
             .from_reader(body.reader());
 
-        let mut response_row: Option<IMFSDRRow> = None;
+        let mut response_row: Option<ImfsdrRow> = None;
 
         for result in imf_sdr.records() {
             let record = result.map_err(|e| {
                 format_err!(ErrorKind::Source, "got error with malformed csv: {}", e)
             })?;
 
-            let row: Result<IMFSDRRow, csv::Error> = record.deserialize(None);
+            let row: Result<ImfsdrRow, csv::Error> = record.deserialize(None);
 
             match row {
                 Ok(imf_sdr_row) => {
@@ -139,9 +139,9 @@ pub struct Response {
     pub price: Price,
 }
 
-impl TryFrom<IMFSDRRow> for Response {
+impl TryFrom<ImfsdrRow> for Response {
     type Error = &'static str;
-    fn try_from(row: IMFSDRRow) -> Result<Self, Self::Error> {
+    fn try_from(row: ImfsdrRow) -> Result<Self, Self::Error> {
         match row.response_from_best_price() {
             Some(resp) => Ok(resp),
             None => Err("No price data found for for currency pair"),
@@ -150,7 +150,7 @@ impl TryFrom<IMFSDRRow> for Response {
 }
 #[cfg(test)]
 mod tests {
-    use super::ImfSDRSource;
+    use super::ImfSdrSource;
     use std::future::Future;
 
     fn block_on<F: Future>(future: F) -> F::Output {
@@ -168,7 +168,7 @@ mod tests {
     fn trading_pairs_ok() {
         let pair = "KRW/SDR".parse().unwrap();
         let quote = block_on(
-            ImfSDRSource::new(&Default::default())
+            ImfSdrSource::new(&Default::default())
                 .unwrap()
                 .trading_pairs(&pair),
         )
@@ -181,7 +181,7 @@ mod tests {
     // #[ignore]
     // fn trading_pairs_404() {
     //     let pair = "N/A".parse().unwrap();
-    //     let quote_err = block_on(ImfSDRSource::new().trading_pairs(&pair))
+    //     let quote_err = block_on(ImfSdrSource::new().trading_pairs(&pair))
     //         .err()
     //         .unwrap();
 

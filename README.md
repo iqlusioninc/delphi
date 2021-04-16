@@ -47,7 +47,7 @@ protocol = "http"
 chain_id = "columbus-4"
 feeder = "terra1..."
 validator = "terravaloper1..."
-fee = { denom = "ukrw", amount = "356100", gas = "200000" }
+fee = { denom = "Ukrw", amount = "356100", gas = "200000" }
 
 # Source configuration: exchanges where price information is gathered from
 [source.alphavantage]

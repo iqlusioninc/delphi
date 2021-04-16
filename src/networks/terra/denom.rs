@@ -20,115 +20,110 @@ use tokio::try_join;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Denom {
     /// Korean Wan
-    UKRW,
+    Ukrw,
 
     /// Mongolian Tugrik
-    UMNT,
+    Umnt,
 
     /// IMF Special Drawing Rights
-    USDR,
+    Usdr,
 
     /// US Dollars
-    UUSD,
+    Uusd,
 
     /// Euro
-    UEUR,
+    Ueur,
 
     /// Chinese Yuan
-    UCNY,
+    Ucny,
 
     /// Japanese Yen
-    UJPY,
+    Ujpy,
 
     /// UK Pound
-    UGBP,
+    Ugbp,
 
     ///Indian Rupee
-    UINR,
+    Uinr,
 
     ///Canadian Dollar
-    UCAD,
+    Ucad,
 
     ///Swiss Franc
-    UCHF,
+    Uchf,
 
     ///Hong Kong Dollar
-    UHKD,
+    Uhkd,
 
     ///Australian Dollar
-    UAUD,
+    Uaud,
 
     ///Singapore Dollar
-    USGD,
+    Usgd,
 
     ///Thai baht
-    UTHB,
+    Uthb,
 }
 
 impl Denom {
     /// Get a slice of the [`Denom`] kinds
     pub fn kinds() -> &'static [Denom] {
         &[
-            Denom::UKRW,
-            Denom::UMNT,
-            Denom::USDR,
-            Denom::UUSD,
-            Denom::UEUR,
-            Denom::UCNY,
-            Denom::UJPY,
-            Denom::UGBP,
-            Denom::UINR,
-            Denom::UCAD,
-            Denom::UCHF,
-            Denom::UHKD,
-            Denom::UAUD,
-            Denom::USGD,
-            Denom::UTHB,
+            Denom::Ukrw,
+            Denom::Umnt,
+            Denom::Usdr,
+            Denom::Uusd,
+            Denom::Ueur,
+            Denom::Ucny,
+            Denom::Ujpy,
+            Denom::Ugbp,
+            Denom::Uinr,
+            Denom::Ucad,
+            Denom::Uchf,
+            Denom::Uhkd,
+            Denom::Uaud,
+            Denom::Usgd,
+            Denom::Uthb,
         ]
     }
 
     /// Get the code corresponding to a [`Denom`]
     pub fn as_str(self) -> &'static str {
         match self {
-            Denom::UKRW => "ukrw",
-            Denom::UMNT => "umnt",
-            Denom::USDR => "usdr",
-            Denom::UUSD => "uusd",
-            Denom::UEUR => "ueur",
-            Denom::UCNY => "ucny",
-            Denom::UJPY => "ujpy",
-            Denom::UGBP => "ugbp",
-            Denom::UINR => "uinr",
-            Denom::UCAD => "ucad",
-            Denom::UCHF => "uchf",
-            Denom::UHKD => "uhkd",
-            Denom::UAUD => "uaud",
-            Denom::USGD => "usgd",
-            Denom::UTHB => "uthb",
+            Denom::Ukrw => "ukrw",
+            Denom::Umnt => "umnt",
+            Denom::Usdr => "usdr",
+            Denom::Uusd => "uusd",
+            Denom::Ueur => "ueur",
+            Denom::Ucny => "ucny",
+            Denom::Ujpy => "ujpy",
+            Denom::Ugbp => "ugbp",
+            Denom::Uinr => "uinr",
+            Denom::Ucad => "ucad",
+            Denom::Uchf => "uchf",
+            Denom::Uhkd => "uhkd",
+            Denom::Uaud => "uaud",
+            Denom::Usgd => "usgd",
+            Denom::Uthb => "uthb",
         }
     }
 
     /// Get the exchange rate for this [`Denom`]
     pub async fn get_exchange_rate(self, sources: &Sources) -> Result<stdtx::Decimal, Error> {
         match self {
-            Denom::UKRW => {
-                let pair = TradingPair(Currency::Luna, Currency::Krw);
+            Denom::Ukrw => {
+                let bithumb_response = sources
+                    .bithumb
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
+                    .await?;
 
-                let (coinone_midpoint, gdac_midpoint, binance_response) = try_join!(
-                    sources.coinone.trading_pairs(&pair),
-                    sources.gdac.trading_pairs(&pair),
-                    sources.binance.approx_price_for_pair(&pair)
-                )?;
-
-                //Midpoint avg for all sources
-                let mut luna_krw =
-                    Decimal::from((coinone_midpoint + gdac_midpoint + binance_response) / 3);
+                let mut luna_krw: Decimal = bithumb_response.into();
 
                 luna_krw.rescale(18);
                 Ok(luna_krw.try_into()?)
             }
 
-            Denom::UMNT => {
+            Denom::Umnt => {
                 let (
                     alphavantage_response_usd,
                     alphavantage_response_krw,
@@ -159,7 +154,7 @@ impl Denom {
                 Ok(luna_mnt.try_into()?)
             }
 
-            Denom::UUSD => {
+            Denom::Uusd => {
                 let binance_response = sources
                     .binance
                     .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd))
@@ -170,7 +165,7 @@ impl Denom {
                 Ok(luna_usd.try_into()?)
             }
 
-            Denom::USDR => {
+            Denom::Usdr => {
                 let (imf_sdr_response, coinone_midpoint) = try_join!(
                     sources
                         .imf_sdr
@@ -217,18 +212,18 @@ impl FromStr for Denom {
 
     fn from_str(s: &str) -> Result<Self, Error> {
         match s.to_ascii_lowercase().as_ref() {
-            "ukrw" => Ok(Denom::UKRW),
-            "umnt" => Ok(Denom::UMNT),
-            "usdr" => Ok(Denom::USDR),
-            "uusd" => Ok(Denom::UUSD),
-            "ueur" => Ok(Denom::UEUR),
-            "ucny" => Ok(Denom::UCNY),
-            "ujpy" => Ok(Denom::UJPY),
-            "ugbp" => Ok(Denom::UGBP),
-            "uinr" => Ok(Denom::UINR),
-            "ucad" => Ok(Denom::UCAD),
-            "uchf" => Ok(Denom::UCHF),
-            "uthb" => Ok(Denom::UTHB),
+            "ukrw" => Ok(Denom::Ukrw),
+            "umnt" => Ok(Denom::Umnt),
+            "usdr" => Ok(Denom::Usdr),
+            "uusd" => Ok(Denom::Uusd),
+            "ueur" => Ok(Denom::Ueur),
+            "ucny" => Ok(Denom::Ucny),
+            "ujpy" => Ok(Denom::Ujpy),
+            "ugbp" => Ok(Denom::Ugbp),
+            "uinr" => Ok(Denom::Uinr),
+            "ucad" => Ok(Denom::Ucad),
+            "uchf" => Ok(Denom::Uchf),
+            "uthb" => Ok(Denom::Uthb),
 
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }

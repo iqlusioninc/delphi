@@ -174,10 +174,10 @@ mod tests {
     fn exchange_rate_to_string() {
         let exchange_rates = ExchangeRates::from_exchange_rates(
             [
-                (Denom::UUSD, "1".parse().unwrap()),
-                (Denom::USDR, "1".parse().unwrap()),
-                (Denom::UMNT, "888".parse().unwrap()),
-                (Denom::UKRW, "362".parse().unwrap()),
+                (Denom::Uusd, "1".parse().unwrap()),
+                (Denom::Usdr, "1".parse().unwrap()),
+                (Denom::Umnt, "888".parse().unwrap()),
+                (Denom::Ukrw, "362".parse().unwrap()),
             ]
             .iter(),
         )
