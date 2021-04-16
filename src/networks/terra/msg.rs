@@ -186,10 +186,10 @@ mod tests {
         let serialized_rates = exchange_rates.to_string();
         assert_eq!(
             &serialized_rates,
-            "362.000000000000000000Ukrw,\
-            888.000000000000000000Umnt,\
-            1.000000000000000000Usdr,\
-            1.000000000000000000Uusd"
+            "362.000000000000000000ukrw,\
+            888.000000000000000000umnt,\
+            1.000000000000000000usdr,\
+            1.000000000000000000uusd"
         );
     }
 }

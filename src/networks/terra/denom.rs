@@ -90,21 +90,21 @@ impl Denom {
     /// Get the code corresponding to a [`Denom`]
     pub fn as_str(self) -> &'static str {
         match self {
-            Denom::Ukrw => "Ukrw",
-            Denom::Umnt => "Umnt",
-            Denom::Usdr => "Usdr",
-            Denom::Uusd => "Uusd",
-            Denom::Ueur => "Ueur",
-            Denom::Ucny => "Ucny",
-            Denom::Ujpy => "Ujpy",
-            Denom::Ugbp => "Ugbp",
-            Denom::Uinr => "Uinr",
-            Denom::Ucad => "Ucad",
-            Denom::Uchf => "Uchf",
-            Denom::Uhkd => "Uhkd",
-            Denom::Uaud => "Uaud",
-            Denom::Usgd => "Usgd",
-            Denom::Uthb => "Uthb",
+            Denom::Ukrw => "ukrw",
+            Denom::Umnt => "umnt",
+            Denom::Usdr => "usdr",
+            Denom::Uusd => "uusd",
+            Denom::Ueur => "ueur",
+            Denom::Ucny => "ucny",
+            Denom::Ujpy => "ujpy",
+            Denom::Ugbp => "ugbp",
+            Denom::Uinr => "uinr",
+            Denom::Ucad => "ucad",
+            Denom::Uchf => "uchf",
+            Denom::Uhkd => "uhkd",
+            Denom::Uaud => "uaud",
+            Denom::Usgd => "usgd",
+            Denom::Uthb => "uthb",
         }
     }
 
@@ -112,17 +112,12 @@ impl Denom {
     pub async fn get_exchange_rate(self, sources: &Sources) -> Result<stdtx::Decimal, Error> {
         match self {
             Denom::Ukrw => {
-                let pair = TradingPair(Currency::Luna, Currency::Krw);
+                let bithumb_response = sources
+                    .bithumb
+                    .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
+                    .await?;
 
-                let (coinone_midpoint, gdac_midpoint, binance_response) = try_join!(
-                    sources.coinone.trading_pairs(&pair),
-                    sources.gdac.trading_pairs(&pair),
-                    sources.binance.approx_price_for_pair(&pair)
-                )?;
-
-                //Midpoint avg for all sources
-                let mut luna_krw =
-                    Decimal::from((coinone_midpoint + gdac_midpoint + binance_response) / 3);
+                let mut luna_krw: Decimal = bithumb_response.into();
 
                 luna_krw.rescale(18);
                 Ok(luna_krw.try_into()?)
@@ -217,18 +212,18 @@ impl FromStr for Denom {
 
     fn from_str(s: &str) -> Result<Self, Error> {
         match s.to_ascii_lowercase().as_ref() {
-            "Ukrw" => Ok(Denom::Ukrw),
-            "Umnt" => Ok(Denom::Umnt),
-            "Usdr" => Ok(Denom::Usdr),
-            "Uusd" => Ok(Denom::Uusd),
-            "Ueur" => Ok(Denom::Ueur),
-            "Ucny" => Ok(Denom::Ucny),
-            "Ujpy" => Ok(Denom::Ujpy),
-            "Ugbp" => Ok(Denom::Ugbp),
-            "Uinr" => Ok(Denom::Uinr),
-            "Ucad" => Ok(Denom::Ucad),
-            "Uchf" => Ok(Denom::Uchf),
-            "Uthb" => Ok(Denom::Uthb),
+            "ukrw" => Ok(Denom::Ukrw),
+            "umnt" => Ok(Denom::Umnt),
+            "usdr" => Ok(Denom::Usdr),
+            "uusd" => Ok(Denom::Uusd),
+            "ueur" => Ok(Denom::Ueur),
+            "ucny" => Ok(Denom::Ucny),
+            "ujpy" => Ok(Denom::Ujpy),
+            "ugbp" => Ok(Denom::Ugbp),
+            "uinr" => Ok(Denom::Uinr),
+            "ucad" => Ok(Denom::Ucad),
+            "uchf" => Ok(Denom::Uchf),
+            "uthb" => Ok(Denom::Uthb),
 
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }
