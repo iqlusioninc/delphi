@@ -155,21 +155,21 @@ impl FromStr for Currency {
 impl From<Denom> for Currency {
     fn from(denom: Denom) -> Currency {
         match denom {
-            Denom::UEUR => Currency::Eur,
-            Denom::UCNY => Currency::Cny,
-            Denom::UJPY => Currency::Jpy,
-            Denom::UGBP => Currency::Gbp,
-            Denom::UINR => Currency::Inr,
-            Denom::UCAD => Currency::Cad,
-            Denom::UCHF => Currency::Chf,
-            Denom::UHKD => Currency::Hkd,
-            Denom::UAUD => Currency::Aud,
-            Denom::USGD => Currency::Sgd,
-            Denom::UKRW => Currency::Krw,
-            Denom::UMNT => Currency::Mnt,
-            Denom::USDR => Currency::Sdr,
-            Denom::UUSD => Currency::Usd,
-            Denom::UTHB => Currency::Thb,
+            Denom::Ueur => Currency::Eur,
+            Denom::Ucny => Currency::Cny,
+            Denom::Ujpy => Currency::Jpy,
+            Denom::Ugbp => Currency::Gbp,
+            Denom::Uinr => Currency::Inr,
+            Denom::Ucad => Currency::Cad,
+            Denom::Uchf => Currency::Chf,
+            Denom::Uhkd => Currency::Hkd,
+            Denom::Uaud => Currency::Aud,
+            Denom::Usgd => Currency::Sgd,
+            Denom::Ukrw => Currency::Krw,
+            Denom::Umnt => Currency::Mnt,
+            Denom::Usdr => Currency::Sdr,
+            Denom::Uusd => Currency::Usd,
+            Denom::Uthb => Currency::Thb,
         }
     }
 }

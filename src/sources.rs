@@ -2,6 +2,7 @@
 
 pub mod alphavantage;
 pub mod binance;
+pub mod bithumb;
 pub mod coinone;
 pub mod dunamu;
 pub mod gdac;
@@ -9,8 +10,9 @@ pub mod gopax;
 pub mod imf_sdr;
 
 use self::{
-    alphavantage::AlphavantageSource, binance::BinanceSource, coinone::CoinoneSource,
-    dunamu::DunamuSource, gdac::GdacSource, gopax::GopaxSource, imf_sdr::ImfSDRSource,
+    alphavantage::AlphavantageSource, binance::BinanceSource, bithumb::BithumbSource,
+    coinone::CoinoneSource, dunamu::DunamuSource, gdac::GdacSource, gopax::GopaxSource,
+    imf_sdr::ImfSdrSource,
 };
 use crate::{config::DelphiConfig, Error, Price, PriceQuantity};
 use rust_decimal::Decimal;
@@ -45,7 +47,11 @@ pub struct Sources {
 
     /// IMF SDR
     /// <https://www.imf.org/>
-    pub imf_sdr: ImfSDRSource,
+    pub imf_sdr: ImfSdrSource,
+
+    /// Bithumb
+    /// <https://api.bithumb.com>
+    pub bithumb: BithumbSource,
 }
 
 impl Sources {
@@ -66,7 +72,8 @@ impl Sources {
         let gdac = GdacSource::new(&config.https)?;
         let dunamu = DunamuSource::new(&config.https)?;
         let gopax = GopaxSource::new(&config.https)?;
-        let imf_sdr = ImfSDRSource::new(&config.https)?;
+        let imf_sdr = ImfSdrSource::new(&config.https)?;
+        let bithumb = BithumbSource::new(&config.https)?;
 
         Ok(Sources {
             alphavantage,
@@ -76,6 +83,7 @@ impl Sources {
             gdac,
             gopax,
             imf_sdr,
+            bithumb,
         })
     }
 }

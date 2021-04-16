@@ -174,10 +174,10 @@ mod tests {
     fn exchange_rate_to_string() {
         let exchange_rates = ExchangeRates::from_exchange_rates(
             [
-                (Denom::UUSD, "1".parse().unwrap()),
-                (Denom::USDR, "1".parse().unwrap()),
-                (Denom::UMNT, "888".parse().unwrap()),
-                (Denom::UKRW, "362".parse().unwrap()),
+                (Denom::Uusd, "1".parse().unwrap()),
+                (Denom::Usdr, "1".parse().unwrap()),
+                (Denom::Umnt, "888".parse().unwrap()),
+                (Denom::Ukrw, "362".parse().unwrap()),
             ]
             .iter(),
         )
@@ -186,10 +186,10 @@ mod tests {
         let serialized_rates = exchange_rates.to_string();
         assert_eq!(
             &serialized_rates,
-            "362.000000000000000000ukrw,\
-            888.000000000000000000umnt,\
-            1.000000000000000000usdr,\
-            1.000000000000000000uusd"
+            "362.000000000000000000Ukrw,\
+            888.000000000000000000Umnt,\
+            1.000000000000000000Usdr,\
+            1.000000000000000000Uusd"
         );
     }
 }
