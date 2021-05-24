@@ -83,6 +83,9 @@ pub enum Currency {
     /// Tether USDT stablecoin
     Usdt,
 
+    /// Swedish Krona
+    Sek,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -115,6 +118,7 @@ impl Display for Currency {
             Currency::Aud => "AUD",
             Currency::Sgd => "SGD",
             Currency::Thb => "THB",
+            Currency::Sek => "SEK",
         })
     }
 }
@@ -147,6 +151,7 @@ impl FromStr for Currency {
             "AUD" => Currency::Aud,
             "SGD" => Currency::Sgd,
             "THB" => Currency::Thb,
+            "SEK" => Currency::Sek,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -170,6 +175,7 @@ impl From<Denom> for Currency {
             Denom::Usdr => Currency::Sdr,
             Denom::Uusd => Currency::Usd,
             Denom::Uthb => Currency::Thb,
+            Denom::Usek => Currency::Sek,
         }
     }
 }
@@ -218,6 +224,7 @@ impl Currency {
             Currency::Aud => "N/A".to_string(),
             Currency::Sgd => "N/A".to_string(),
             Currency::Thb => "N/A".to_string(),
+            Currency::Sek => "N/A".to_string(),
         }
     }
 }
