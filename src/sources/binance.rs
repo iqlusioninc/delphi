@@ -34,6 +34,8 @@ impl BinanceSource {
     /// Get the average price for the given pair, approximating prices for
     /// pairs which don't natively exist on binance
     pub async fn approx_price_for_pair(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting Binance Trading Pair {}",pair);
+        
         if let Ok(symbol_name) = SymbolName::try_from(pair) {
             return self.avg_price_for_symbol(symbol_name).await;
         }

@@ -5,6 +5,8 @@ use super::{midpoint, AskBook, BidBook};
 use crate::{
     config::HttpsConfig,
     https_client::{HttpsClient, Query},
+    prelude::*,
+
 };
 use crate::{Error, Price, PriceQuantity, TradingPair};
 use serde::{de, Deserialize, Serialize};
@@ -30,6 +32,8 @@ impl GdacSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting DGAC Trading Pair {}",pair);
+
         let mut query = Query::new();
         query.add("pair".to_owned(), pair.percent_encode());
 
