@@ -440,7 +440,7 @@ dependencies = [
  "hyper-rustls",
  "once_cell",
  "percent-encoding",
- "rand 0.7.3",
+ "rand 0.8.3",
  "rust_decimal",
  "serde",
  "serde_json",
