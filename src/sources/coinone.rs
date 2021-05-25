@@ -28,8 +28,6 @@ impl CoinoneSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
-        info!("Getting Coinone Trading Pair {}",pair);
-
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
@@ -38,6 +36,8 @@ impl CoinoneSource {
         query.add("currency".to_owned(), pair.0.to_string());
 
         let api_response: Response = self.https_client.get_json("/orderbook", &query).await?;
+        info!("Got Coinone Trading Pair {}", pair);
+
         midpoint(&api_response)
     }
 }

@@ -6,8 +6,8 @@ use super::{midpoint, AskBook, BidBook};
 use crate::{
     config::HttpsConfig,
     https_client::{HttpsClient, Query},
-    Error, Price, PriceQuantity, TradingPair,
     prelude::*,
+    Error, Price, PriceQuantity, TradingPair,
 };
 use rust_decimal::Decimal;
 use serde::{de, Deserialize, Serialize};
@@ -31,8 +31,6 @@ impl GopaxSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
-        info!("Getting DGAC Trading Pair {}",pair);
-
         let query = Query::new();
 
         let api_response: Response = self
@@ -42,6 +40,8 @@ impl GopaxSource {
                 &query,
             )
             .await?;
+
+        info!("Got DGAC Trading Pair {}", pair);
 
         midpoint(&api_response)
     }

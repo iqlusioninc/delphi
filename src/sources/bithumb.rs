@@ -27,8 +27,6 @@ impl BithumbSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
-        info!("Getting Bitthumb Trading Pair {}",pair);
-
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
@@ -39,6 +37,8 @@ impl BithumbSource {
             .https_client
             .get_json("/public/ticker/luna_krw", &query)
             .await?;
+        info!("Got Bitthumb Trading Pair {}", pair);
+
         Ok(api_response.data.closing_price.parse::<Price>().unwrap())
     }
 }
