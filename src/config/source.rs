@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 pub struct SourceConfig {
     /// AlphaVantage
     pub alphavantage: Option<AlphavantageConfig>,
+    /// Currencylayer
+    pub currencylayer: Option<CurrencylayerConfig>,
 }
 
 /// AlphaVantage Configuration
@@ -16,4 +18,12 @@ pub struct SourceConfig {
 pub struct AlphavantageConfig {
     /// API key
     pub apikey: String,
+}
+
+/// Currencylayer Configuration
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct CurrencylayerConfig {
+    /// API key
+    pub access_key: String,
 }
