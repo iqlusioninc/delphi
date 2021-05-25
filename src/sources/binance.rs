@@ -64,6 +64,8 @@ impl BinanceSource {
 
     /// `GET /api/v3/avgPrice` - get average price for Binance trading symbol
     pub async fn avg_price_for_symbol(&self, symbol_name: SymbolName) -> Result<Price, Error> {
+        info!("Getting Binance Trading Pair {}", symbol_name);
+
         let mut query = Query::new();
         query.add("symbol".to_owned(), symbol_name.to_string());
 
@@ -72,7 +74,7 @@ impl BinanceSource {
             .get_json("/api/v3/avgPrice", &query)
             .await?;
 
-        info!("Getting Binance Trading Pair {}", symbol_name);
+        info!("Got Binance Trading Pair {}", symbol_name);
 
         Price::new(api_response.price)
     }

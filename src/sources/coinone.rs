@@ -28,6 +28,8 @@ impl CoinoneSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting Coinone Trading Pair {}", pair);
+
         if pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }

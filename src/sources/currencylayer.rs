@@ -51,6 +51,8 @@ impl CurrencylayerSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting CurrencyLayer Trading Pair {}", pair);
+
         let params = CurrencylayerParams {
             source: pair.0.to_string(),
             currencies: pair.1.to_string(),

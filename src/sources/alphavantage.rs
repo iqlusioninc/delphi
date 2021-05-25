@@ -51,6 +51,8 @@ impl AlphavantageSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting Alpha Vantage Trading Pair {}", pair);
+
         let params = AlphavantageParams {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),
