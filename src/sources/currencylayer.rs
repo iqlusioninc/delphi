@@ -85,6 +85,7 @@ pub struct Response {
 mod tests {
     use super::CurrencylayerSource;
     #[tokio::test]
+    #[ignore]
     async fn trading_pairs_ok() {
         let pair = "KRW/USD".parse().unwrap();
         let _response = CurrencylayerSource::new(
