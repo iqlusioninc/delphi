@@ -21,3 +21,8 @@ fee = { denom = "Ukrw", amount = "356100", gas = "200000" }
 [source.alphavantage]
 # Get API key here (quick-and-simple form): https://www.alphavantage.co/support/#api-key
 apikey = "api key goes here"
+
+# Source configuration: exchanges where price information is gathered from
+[source.currencylayer]
+# Get API key here (quick-and-simple form): https://currencylayer.com/product
+access_key = "access key goes here"

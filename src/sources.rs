@@ -4,6 +4,7 @@ pub mod alphavantage;
 pub mod binance;
 pub mod bithumb;
 pub mod coinone;
+pub mod currencylayer;
 pub mod dunamu;
 pub mod gdac;
 pub mod gopax;
@@ -11,10 +12,13 @@ pub mod imf_sdr;
 
 use self::{
     alphavantage::AlphavantageSource, binance::BinanceSource, bithumb::BithumbSource,
-    coinone::CoinoneSource, dunamu::DunamuSource, gdac::GdacSource, gopax::GopaxSource,
-    imf_sdr::ImfSdrSource,
+    coinone::CoinoneSource, currencylayer::CurrencylayerSource, dunamu::DunamuSource,
+    gdac::GdacSource, gopax::GopaxSource, imf_sdr::ImfSdrSource,
 };
-use crate::{config::DelphiConfig, Error, Price, PriceQuantity};
+use crate::{
+    config::{source::AlphavantageConfig, DelphiConfig},
+    Error, Price, PriceQuantity,
+};
 use rust_decimal::Decimal;
 
 // TODO(shella): factor this into e.g. a common Tower service when we have 2+ oracles
@@ -52,6 +56,10 @@ pub struct Sources {
     /// Bithumb
     /// <https://api.bithumb.com>
     pub bithumb: BithumbSource,
+
+    /// Currencylayer
+    /// <https://api.currencylayer.com>
+    pub currencylayer: CurrencylayerSource,
 }
 
 impl Sources {
@@ -63,7 +71,9 @@ impl Sources {
                 .source
                 .alphavantage
                 .as_ref()
-                .expect("missing alphavantage config")
+                .unwrap_or(&AlphavantageConfig {
+                    apikey: "default key".to_string(),
+                })
                 .apikey,
             &config.https,
         )?;
@@ -74,6 +84,15 @@ impl Sources {
         let gopax = GopaxSource::new(&config.https)?;
         let imf_sdr = ImfSdrSource::new(&config.https)?;
         let bithumb = BithumbSource::new(&config.https)?;
+        let currencylayer = CurrencylayerSource::new(
+            &config
+                .source
+                .currencylayer
+                .as_ref()
+                .expect("missing currencylayer config")
+                .access_key,
+            &config.https,
+        )?;
 
         Ok(Sources {
             alphavantage,
@@ -84,6 +103,7 @@ impl Sources {
             gopax,
             imf_sdr,
             bithumb,
+            currencylayer,
         })
     }
 }
