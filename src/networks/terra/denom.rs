@@ -173,14 +173,14 @@ impl Denom {
             Denom::Usdr => {
                 let (imf_sdr_response, coinone_midpoint) = try_join!(
                     sources
-                        .imf_sdr
+                        .currencylayer
                         .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr)),
                     sources
                         .coinone
                         .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                 )?;
 
-                let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
+                let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response);
                 luna_sdr.rescale(18);
                 Ok(luna_sdr.try_into()?)
             }
