@@ -15,7 +15,10 @@ use self::{
     coinone::CoinoneSource, currencylayer::CurrencylayerSource, dunamu::DunamuSource,
     gdac::GdacSource, gopax::GopaxSource, imf_sdr::ImfSdrSource,
 };
-use crate::{Error, Price, PriceQuantity, config::{DelphiConfig, source::AlphavantageConfig}};
+use crate::{
+    config::{source::AlphavantageConfig, DelphiConfig},
+    Error, Price, PriceQuantity,
+};
 use rust_decimal::Decimal;
 
 // TODO(shella): factor this into e.g. a common Tower service when we have 2+ oracles
@@ -68,7 +71,9 @@ impl Sources {
                 .source
                 .alphavantage
                 .as_ref()
-                .unwrap_or(&AlphavantageConfig{apikey:"default key".to_string()})
+                .unwrap_or(&AlphavantageConfig {
+                    apikey: "default key".to_string(),
+                })
                 .apikey,
             &config.https,
         )?;
