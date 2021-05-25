@@ -23,9 +23,14 @@ Following exchanges are supported:
 - [GDAC][gdac]
 - [GOPAX][gopax]
 - [IMF SDR][imfsdr]
+- [IMF SDR][imfsdr]
+- [Currencylayer][currencylayer]
 
 ### Alpha Vantage 
 This source requires an API key. Request key from [Alpha Vantage][alphavantage_api] then add to following config file. 
+
+### Currencylayer
+This source requires an API key. Request key from [Currencylayer][currencylayer_api] then add to following config file. 
 
 ### Config
 Create config with `touch delphi.toml` then add your relevant network configuration.
@@ -97,6 +102,8 @@ limitations under the License.
 
 [alphavantage]: https://www.alphavantage.co/
 [alphavantage_api]: https://www.alphavantage.co/support/#api-key
+[currencylayer]: https://www.currencylayer.com
+[currencylayer_api]: https://currencylayer.com/product
 [binance]: https://binance-docs.github.io/apidocs/spot/en/#change-log
 [cc]: https://contributor-covenant.org
 [CODE_OF_CONDUCT.md]: https://github.com/iqlusioninc/delphi/blob/develop/CODE_OF_CONDUCT.md
