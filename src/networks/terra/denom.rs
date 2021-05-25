@@ -63,6 +63,9 @@ pub enum Denom {
 
     ///Thai baht
     Uthb,
+
+    ///Swedish Krona
+    Usek,
 }
 
 impl Denom {
@@ -84,6 +87,7 @@ impl Denom {
             Denom::Uaud,
             Denom::Usgd,
             Denom::Uthb,
+            Denom::Usek,
         ]
     }
 
@@ -105,6 +109,7 @@ impl Denom {
             Denom::Uaud => "uaud",
             Denom::Usgd => "usgd",
             Denom::Uthb => "uthb",
+            Denom::Usek => "usek",
         }
     }
 
@@ -125,16 +130,16 @@ impl Denom {
 
             Denom::Umnt => {
                 let (
-                    alphavantage_response_usd,
-                    alphavantage_response_krw,
+                    currencylayer_response_usd,
+                    currencylayer_response_krw,
                     binance_response,
                     coinone_midpoint,
                 ) = try_join!(
                     sources
-                        .alphavantage
+                        .currencylayer
                         .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt)),
                     sources
-                        .alphavantage
+                        .currencylayer
                         .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt)),
                     sources
                         .binance
@@ -145,8 +150,8 @@ impl Denom {
                 )?;
 
                 let mut luna_mnt = Decimal::from(
-                    (binance_response * alphavantage_response_usd
-                        + coinone_midpoint * alphavantage_response_krw)
+                    (binance_response * currencylayer_response_usd
+                        + coinone_midpoint * currencylayer_response_krw)
                         / 2,
                 );
 
@@ -188,14 +193,14 @@ impl Denom {
 async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::Decimal, Error> {
     let pair_1 = TradingPair(Currency::Usd, cur);
 
-    let (alphavantage_response_usd, binance_response) = try_join!(
-        sources.alphavantage.trading_pairs(&pair_1),
+    let (currencylayer_response_usd, binance_response) = try_join!(
+        sources.currencylayer.trading_pairs(&pair_1),
         sources
             .binance
             .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
     )?;
 
-    let mut luna_cur = Decimal::from(binance_response * alphavantage_response_usd);
+    let mut luna_cur = Decimal::from(binance_response * currencylayer_response_usd);
 
     luna_cur.rescale(18);
     Ok(luna_cur.try_into()?)
@@ -224,6 +229,7 @@ impl FromStr for Denom {
             "ucad" => Ok(Denom::Ucad),
             "uchf" => Ok(Denom::Uchf),
             "uthb" => Ok(Denom::Uthb),
+            "usek" => Ok(Denom::Usek),
 
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }
