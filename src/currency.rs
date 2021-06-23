@@ -38,6 +38,9 @@ pub enum Currency {
     ///Chinese Yuan
     Cny,
 
+    ///Danish Krone
+    Dkk,
+
     /// Ethereum
     Eth,
 
@@ -119,6 +122,7 @@ impl Display for Currency {
             Currency::Sgd => "SGD",
             Currency::Thb => "THB",
             Currency::Sek => "SEK",
+            Currency::Dkk => "DKK",
         })
     }
 }
@@ -152,6 +156,7 @@ impl FromStr for Currency {
             "SGD" => Currency::Sgd,
             "THB" => Currency::Thb,
             "SEK" => Currency::Sek,
+            "DKK" => Currency::Dkk,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -176,6 +181,7 @@ impl From<Denom> for Currency {
             Denom::Uusd => Currency::Usd,
             Denom::Uthb => Currency::Thb,
             Denom::Usek => Currency::Sek,
+            Denom::Udkk => Currency::Dkk,
         }
     }
 }
@@ -225,6 +231,7 @@ impl Currency {
             Currency::Sgd => "N/A".to_string(),
             Currency::Thb => "N/A".to_string(),
             Currency::Sek => "N/A".to_string(),
+            Currency::Dkk => "N/A".to_string(),
         }
     }
 }

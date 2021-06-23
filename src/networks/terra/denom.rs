@@ -66,6 +66,9 @@ pub enum Denom {
 
     ///Swedish Krona
     Usek,
+
+    ///Danish Krone
+    Udkk,
 }
 
 impl Denom {
@@ -88,6 +91,7 @@ impl Denom {
             Denom::Usgd,
             Denom::Uthb,
             Denom::Usek,
+            Denom::Udkk,
         ]
     }
 
@@ -110,6 +114,7 @@ impl Denom {
             Denom::Usgd => "usgd",
             Denom::Uthb => "uthb",
             Denom::Usek => "usek",
+            Denom::Udkk => "udkk",
         }
     }
 
@@ -230,6 +235,7 @@ impl FromStr for Denom {
             "uchf" => Ok(Denom::Uchf),
             "uthb" => Ok(Denom::Uthb),
             "usek" => Ok(Denom::Usek),
+            "udkk" => Ok(Denom::Udkk),
 
             _ => fail!(ErrorKind::Currency, "unknown Terra denom: {}", s),
         }
