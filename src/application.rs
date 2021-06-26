@@ -3,36 +3,18 @@
 use crate::{commands::DelphiCmd, config::DelphiConfig};
 use abscissa_core::{
     application::{self, AppCell},
-    config, trace, Application, EntryPoint, FrameworkError, StandardPaths,
+    config::{self, CfgCell},
+    trace, Application, EntryPoint, FrameworkError, StandardPaths,
 };
 
 /// Application state
-pub static APPLICATION: AppCell<DelphiApp> = AppCell::new();
-
-/// Obtain a read-only (multi-reader) lock on the application state.
-///
-/// Panics if the application state has not been initialized.
-pub fn app_reader() -> application::lock::Reader<DelphiApp> {
-    APPLICATION.read()
-}
-
-/// Obtain an exclusive mutable lock on the application state.
-pub fn app_writer() -> application::lock::Writer<DelphiApp> {
-    APPLICATION.write()
-}
-
-/// Obtain a read-only (multi-reader) lock on the application configuration.
-///
-/// Panics if the application configuration has not been loaded.
-pub fn app_config() -> config::Reader<DelphiApp> {
-    config::Reader::new(&APPLICATION)
-}
+pub static APP: AppCell<DelphiApp> = AppCell::new();
 
 /// Delphi Application
 #[derive(Debug)]
 pub struct DelphiApp {
     /// Application configuration.
-    config: Option<DelphiConfig>,
+    config: CfgCell<DelphiConfig>,
 
     /// Application state.
     state: application::State<Self>,
@@ -45,7 +27,7 @@ pub struct DelphiApp {
 impl Default for DelphiApp {
     fn default() -> Self {
         Self {
-            config: None,
+            config: CfgCell::default(),
             state: application::State::default(),
         }
     }
@@ -62,18 +44,13 @@ impl Application for DelphiApp {
     type Paths = StandardPaths;
 
     /// Accessor for application configuration.
-    fn config(&self) -> &DelphiConfig {
-        self.config.as_ref().expect("config not loaded")
+    fn config(&self) -> config::Reader<DelphiConfig> {
+        self.config.read().expect("config not loaded")
     }
 
     /// Borrow the application state immutably.
     fn state(&self) -> &application::State<Self> {
         &self.state
-    }
-
-    /// Borrow the application state mutably.
-    fn state_mut(&mut self) -> &mut application::State<Self> {
-        &mut self.state
     }
 
     /// Register all components used by this application.

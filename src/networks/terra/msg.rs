@@ -44,9 +44,9 @@ impl MsgAggregateExchangeRateVote {
     }
 
     /// Simple builder for an `oracle/MsgAggregateExchangeRateVote` message
-    pub fn to_stdtx_msg(&self) -> Result<stdtx::Msg, Error> {
+    pub fn to_stdtx_msg(&self) -> Result<stdtx::amino::Msg, Error> {
         Ok(
-            stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRateVote")?
+            stdtx::amino::Msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRateVote")?
                 .string("exchange_rates", self.exchange_rates.to_string())?
                 .string("salt", &self.salt)?
                 .acc_address("feeder", self.feeder)?
@@ -95,9 +95,9 @@ pub struct MsgAggregateExchangeRatePrevote {
 
 impl MsgAggregateExchangeRatePrevote {
     /// Simple builder for an `oracle/MsgAggregateExchangeRatePrevote` message
-    pub fn to_stdtx_msg(&self) -> Result<stdtx::Msg, Error> {
+    pub fn to_stdtx_msg(&self) -> Result<stdtx::amino::Msg, Error> {
         Ok(
-            stdtx::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
+            stdtx::amino::Msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
                 .bytes("hash", self.hash.as_ref())?
                 .acc_address("feeder", self.feeder)?
                 .val_address("validator", self.validator)?

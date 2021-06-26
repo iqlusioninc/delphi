@@ -13,7 +13,8 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
-use stdtx::{amino_types::StdFee, Address};
+use stdtx::address::Address;
+use stdtx::amino::types::StdFee;
 use tendermint_rpc::endpoint::broadcast::tx_commit;
 use tokio::{sync::Mutex, time::timeout};
 use warp::http::StatusCode;
@@ -75,7 +76,7 @@ impl ExchangeRateOracle {
     async fn get_vote_msgs(
         &self,
         last_tx_response: Option<tx_commit::Response>,
-    ) -> Vec<stdtx::Msg> {
+    ) -> Vec<stdtx::amino::Msg> {
         let started_at = Instant::now();
         let mut state = self.0.lock().await;
         let mut exchange_rates = msg::ExchangeRates::new();
@@ -181,7 +182,7 @@ struct OracleState {
     timeout: Duration,
 
     /// Previously unrevealed vote
-    unrevealed_vote: Option<stdtx::Msg>,
+    unrevealed_vote: Option<stdtx::amino::Msg>,
 }
 
 impl OracleState {

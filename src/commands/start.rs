@@ -1,6 +1,6 @@
 //! `start` subcommand
 
-use crate::{application::APPLICATION, router::Router};
+use crate::{application::APP, router::Router};
 use abscissa_core::{prelude::*, Command, Options, Runnable};
 use std::process;
 
@@ -18,7 +18,7 @@ impl Runnable for StartCmd {
         });
 
         // Run the application
-        abscissa_tokio::run(&APPLICATION, async { router.route().await }).unwrap_or_else(|e| {
+        abscissa_tokio::run(&APP, async { router.route().await }).unwrap_or_else(|e| {
             status_err!("executor exited with error: {}", e);
             process::exit(1);
         });

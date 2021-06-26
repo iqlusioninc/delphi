@@ -9,7 +9,6 @@ use crate::{
     prelude::*,
     Currency, Price, TradingPair,
 };
-use bytes::buf::ext::BufExt;
 use hyper::{header, Body, Request};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;

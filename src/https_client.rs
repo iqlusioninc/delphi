@@ -1,7 +1,7 @@
 //! HTTPS Client
 
 use crate::{config::HttpsConfig, Error, ErrorKind};
-use bytes::buf::ext::BufExt;
+use bytes::buf::BufMut;
 use hyper::{
     client::{Client, HttpConnector, ResponseFuture},
     header, Body, Request, Response, Uri,
