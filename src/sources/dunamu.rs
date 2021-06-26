@@ -4,14 +4,11 @@
 use super::Price;
 use crate::{
     config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-    Currency, TradingPair,
-};
-use crate::{
     error::{Error, ErrorKind},
     prelude::*,
+    Currency, TradingPair,
 };
-
+use iqhttp::{HttpsClient, Query};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +26,7 @@ impl DunamuSource {
     /// Create a new Dunamu source provider
     #[allow(clippy::new_without_default)]
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 

@@ -3,11 +3,8 @@
 //! <https://api.gopax.co.kr/trading-pairs/LUNA-KRW/book>
 
 use super::{midpoint, AskBook, BidBook};
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-    Error, Price, PriceQuantity, TradingPair,
-};
+use crate::{config::HttpsConfig, Error, Price, PriceQuantity, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use rust_decimal::Decimal;
 use serde::{de, Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -24,7 +21,7 @@ impl GopaxSource {
     /// Create a new GOPAX source provider
     #[allow(clippy::new_without_default)]
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 

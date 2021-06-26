@@ -45,7 +45,7 @@ impl Application for DelphiApp {
 
     /// Accessor for application configuration.
     fn config(&self) -> config::Reader<DelphiConfig> {
-        self.config.read().expect("config not loaded")
+        self.config.read()
     }
 
     /// Borrow the application state immutably.
@@ -57,14 +57,16 @@ impl Application for DelphiApp {
     fn register_components(&mut self, command: &Self::Cmd) -> Result<(), FrameworkError> {
         let mut components = self.framework_components(command)?;
         components.push(Box::new(abscissa_tokio::TokioComponent::new()?));
-        self.state.components.register(components)
+        let mut component_registry = self.state.components_mut();
+        component_registry.register(components)
     }
 
     /// Post-configuration lifecycle callback.
     fn after_config(&mut self, config: Self::Cfg) -> Result<(), FrameworkError> {
         // Configure components
-        self.state.components.after_config(&config)?;
-        self.config = Some(config);
+        let mut component_registry = self.state.components_mut();
+        component_registry.after_config(&config)?;
+        self.config.set_once(config);
         Ok(())
     }
 

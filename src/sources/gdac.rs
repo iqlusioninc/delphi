@@ -2,11 +2,8 @@
 //! <https://www.gdac.com/>
 
 use super::{midpoint, AskBook, BidBook};
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-};
-use crate::{Error, Price, PriceQuantity, TradingPair};
+use crate::{config::HttpsConfig, Error, Price, PriceQuantity, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use serde::{de, Deserialize, Serialize};
 use std::{
     fmt::{self, Display},
@@ -24,7 +21,7 @@ pub struct GdacSource {
 impl GdacSource {
     /// Create a new GDAC source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 

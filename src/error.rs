@@ -79,14 +79,8 @@ impl From<Context<ErrorKind>> for Error {
     }
 }
 
-impl From<http::Error> for Error {
-    fn from(err: http::Error) -> Self {
-        ErrorKind::Http.context(err).into()
-    }
-}
-
-impl From<hyper::Error> for Error {
-    fn from(err: hyper::Error) -> Self {
+impl From<iqhttp::Error> for Error {
+    fn from(err: iqhttp::Error) -> Self {
         ErrorKind::Http.context(err).into()
     }
 }

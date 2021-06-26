@@ -3,11 +3,8 @@
 //!
 //! Only KRW pairs are supported.
 
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-};
-use crate::{prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use crate::{config::HttpsConfig, prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use serde::{Deserialize, Serialize};
 
 /// Hostname for Bithumb API
@@ -21,7 +18,7 @@ pub struct BithumbSource {
 impl BithumbSource {
     /// Create a new Bithumb source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 

@@ -5,10 +5,9 @@
 
 use super::{midpoint, AskBook, BidBook};
 use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
+    config::HttpsConfig, prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair,
 };
-use crate::{prelude::*, Currency, Error, ErrorKind, Price, PriceQuantity, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use serde::{Deserialize, Serialize};
 
 /// Hostname for Coinone API
@@ -22,7 +21,7 @@ pub struct CoinoneSource {
 impl CoinoneSource {
     /// Create a new Coinone source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 

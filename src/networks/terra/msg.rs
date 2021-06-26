@@ -40,13 +40,13 @@ pub struct MsgAggregateExchangeRateVote {
 impl MsgAggregateExchangeRateVote {
     /// Get a random salt value
     pub fn random_salt() -> String {
-        thread_rng().sample_iter(&Alphanumeric).take(4).collect()
+        String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(4).collect()).expect("UTF-8 error")
     }
 
     /// Simple builder for an `oracle/MsgAggregateExchangeRateVote` message
-    pub fn to_stdtx_msg(&self) -> Result<stdtx::amino::Msg, Error> {
+    pub fn to_stdtx_msg(&self) -> eyre::Result<stdtx::amino::Msg> {
         Ok(
-            stdtx::amino::Msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRateVote")?
+            stdtx::amino::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRateVote")?
                 .string("exchange_rates", self.exchange_rates.to_string())?
                 .string("salt", &self.salt)?
                 .acc_address("feeder", self.feeder)?
@@ -95,9 +95,9 @@ pub struct MsgAggregateExchangeRatePrevote {
 
 impl MsgAggregateExchangeRatePrevote {
     /// Simple builder for an `oracle/MsgAggregateExchangeRatePrevote` message
-    pub fn to_stdtx_msg(&self) -> Result<stdtx::amino::Msg, Error> {
+    pub fn to_stdtx_msg(&self) -> eyre::Result<stdtx::amino::Msg> {
         Ok(
-            stdtx::amino::Msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
+            stdtx::amino::msg::Builder::new(&SCHEMA, "oracle/MsgAggregateExchangeRatePrevote")?
                 .bytes("hash", self.hash.as_ref())?
                 .acc_address("feeder", self.feeder)?
                 .val_address("validator", self.validator)?

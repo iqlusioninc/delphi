@@ -4,14 +4,13 @@
 use crate::{
     config::HttpsConfig,
     error::{Error, ErrorKind},
-    https_client::HttpsClient,
-    https_client::USER_AGENT,
     prelude::*,
     Currency, Price, TradingPair,
 };
-use hyper::{header, Body, Request};
+use iqhttp::HttpsClient;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
+use bytes::Buf;
 
 //https://www.imf.org/external/np/fin/data/rms_five.aspx?tsvflag=Y"
 
@@ -65,7 +64,7 @@ impl ImfsdrRow {
 impl ImfSdrSource {
     /// Create a new Dunamu source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 
@@ -80,23 +79,7 @@ impl ImfSdrSource {
             API_HOST
         );
 
-        let mut request = Request::builder()
-            .method("GET")
-            .uri(&uri)
-            .body(Body::empty())?;
-
-        {
-            let headers = request.headers_mut();
-            headers.insert(
-                header::USER_AGENT,
-                format!("{}/{}", USER_AGENT, env!("CARGO_PKG_VERSION"))
-                    .parse()
-                    .unwrap(),
-            );
-        }
-
-        let response = self.https_client.get(request).await?;
-        let body = hyper::body::aggregate(response.into_body()).await?;
+        let body = self.https_client.get_body(&uri, &Default::default()).await?;
 
         let mut imf_sdr = csv::ReaderBuilder::new()
             .has_headers(false)

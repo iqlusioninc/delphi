@@ -1,7 +1,7 @@
 //! `start` subcommand
 
-use crate::{application::APP, router::Router};
-use abscissa_core::{prelude::*, Command, Options, Runnable};
+use crate::{application::APP, prelude::*, router::Router};
+use abscissa_core::{Command, Options, Runnable};
 use std::process;
 
 /// `start` subcommand

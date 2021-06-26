@@ -19,11 +19,9 @@ categories  = ["cryptography::cryptocurrencies"]
 abscissa_core = "=0.6.0-pre.1"
 abscissa_tokio = "=0.6.0-pre.1"
 bytes = "1"
+eyre = "0.6"
 gumdrop = "0.7"
-http = "0.2"
-hyper = "0.13"
-hyper-proxy = "0.8"
-hyper-rustls = "0.21"
+iqhttp = { version = "0.1", features = ["json", "proxy"] }
 percent-encoding = "2.1"
 rand = "0.8"
 rust_decimal = "1"
@@ -35,10 +33,10 @@ stdtx = "0.5"
 tendermint = "0.20"
 tendermint-rpc = "0.20"
 thiserror = "1"
-tokio = { version = "0.2", features = ["rt-threaded", "macros"] }
+tokio = { version = "1", features = ["full"] }
 warp = "0.3"
 csv = "1.1"
 futures = "0.3"
 
 [dev-dependencies]
-abscissa_core = { version = "0.5", features = ["testing"] }
+abscissa_core = { version = "=0.6.0-pre.1", features = ["testing"] }

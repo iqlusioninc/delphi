@@ -139,7 +139,7 @@ impl Denom {
                 let mut luna_krw: Decimal = bithumb_response.into();
 
                 luna_krw.rescale(18);
-                Ok(luna_krw.try_into()?)
+                Ok(luna_krw.try_into().map_err(|_| ErrorKind::Parse)?)
             }
 
             Denom::Umnt => {
@@ -170,7 +170,7 @@ impl Denom {
                 );
 
                 luna_mnt.rescale(18);
-                Ok(luna_mnt.try_into()?)
+                Ok(luna_mnt.try_into().map_err(|_| ErrorKind::Parse)?)
             }
 
             Denom::Uusd => {
@@ -181,7 +181,7 @@ impl Denom {
 
                 let mut luna_usd: Decimal = binance_response.into();
                 luna_usd.rescale(18);
-                Ok(luna_usd.try_into()?)
+                Ok(luna_usd.try_into().map_err(|_| ErrorKind::Parse)?)
             }
 
             Denom::Usdr => {
@@ -196,7 +196,7 @@ impl Denom {
 
                 let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
                 luna_sdr.rescale(18);
-                Ok(luna_sdr.try_into()?)
+                Ok(luna_sdr.try_into().map_err(|_| ErrorKind::Parse)?)
             }
 
             _ => luna_rate_via_usd(sources, self.into()).await,
@@ -217,7 +217,7 @@ async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::De
     let mut luna_cur = Decimal::from(binance_response * currencylayer_response_usd);
 
     luna_cur.rescale(18);
-    Ok(luna_cur.try_into()?)
+    Ok(luna_cur.try_into().map_err(|_| ErrorKind::Parse)?)
 }
 
 impl Display for Denom {

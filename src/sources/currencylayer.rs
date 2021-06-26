@@ -2,11 +2,8 @@
 //! <https://api.currencylayer.com>
 //!
 
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-};
-use crate::{Error, Price, TradingPair};
+use crate::{config::HttpsConfig, Error, Price, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -41,7 +38,7 @@ impl CurrencylayerParams {
 impl CurrencylayerSource {
     /// Create a new Currencylayer source provider
     pub fn new(access_key: impl Into<String>, config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self {
             https_client,
             access_key: access_key.into(),
