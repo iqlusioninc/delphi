@@ -152,42 +152,30 @@ impl<'de> Deserialize<'de> for ErrorCode {
 #[cfg(test)]
 mod tests {
     use super::GdacSource;
-    use std::future::Future;
-
-    fn block_on<F: Future>(future: F) -> F::Output {
-        tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(future)
-    }
 
     /// `trading_pairs()` test with known currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_ok() {
+    async fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _price = block_on(
-            GdacSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .unwrap();
+        let _price = GdacSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_404() {
+    async fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
 
-        let _err = block_on(
-            GdacSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .err()
-        .unwrap();
+        let _err = GdacSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .err()
+            .unwrap();
     }
 }

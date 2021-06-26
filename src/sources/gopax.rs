@@ -123,40 +123,28 @@ where
 #[cfg(test)]
 mod tests {
     use super::GopaxSource;
-    use std::future::Future;
-
-    fn block_on<F: Future>(future: F) -> F::Output {
-        tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(future)
-    }
 
     /// `trading_pairs()` test with known currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_ok() {
+    async fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _quote = block_on(
-            GopaxSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .unwrap();
+        let _quote = GopaxSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_404() {
+    async fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
-        let quote = block_on(
-            GopaxSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        );
+        let quote = GopaxSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await;
         assert!(quote.is_err());
     }
 }

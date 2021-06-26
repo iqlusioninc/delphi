@@ -136,28 +136,17 @@ impl TryFrom<ImfsdrRow> for Response {
 #[cfg(test)]
 mod tests {
     use super::ImfSdrSource;
-    use std::future::Future;
-
-    fn block_on<F: Future>(future: F) -> F::Output {
-        tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(future)
-    }
 
     /// `trading_pairs()` test with known currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_ok() {
+    async fn trading_pairs_ok() {
         let pair = "KRW/SDR".parse().unwrap();
-        let quote = block_on(
-            ImfSdrSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .unwrap();
+        let quote = ImfSdrSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .unwrap();
         dbg!(&quote);
     }
 
