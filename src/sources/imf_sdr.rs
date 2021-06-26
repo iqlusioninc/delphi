@@ -7,10 +7,10 @@ use crate::{
     prelude::*,
     Currency, Price, TradingPair,
 };
+use bytes::Buf;
 use iqhttp::HttpsClient;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use bytes::Buf;
 
 //https://www.imf.org/external/np/fin/data/rms_five.aspx?tsvflag=Y"
 
@@ -79,7 +79,10 @@ impl ImfSdrSource {
             API_HOST
         );
 
-        let body = self.https_client.get_body(&uri, &Default::default()).await?;
+        let body = self
+            .https_client
+            .get_body(&uri, &Default::default())
+            .await?;
 
         let mut imf_sdr = csv::ReaderBuilder::new()
             .has_headers(false)

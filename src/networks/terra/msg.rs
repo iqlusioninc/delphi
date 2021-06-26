@@ -40,7 +40,8 @@ pub struct MsgAggregateExchangeRateVote {
 impl MsgAggregateExchangeRateVote {
     /// Get a random salt value
     pub fn random_salt() -> String {
-        String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(4).collect()).expect("UTF-8 error")
+        String::from_utf8(thread_rng().sample_iter(&Alphanumeric).take(4).collect())
+            .expect("UTF-8 error")
     }
 
     /// Simple builder for an `oracle/MsgAggregateExchangeRateVote` message
