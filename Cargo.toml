@@ -36,7 +36,7 @@ tendermint = "0.17.0-rc3"
 tendermint-rpc = "0.17.0-rc2"
 thiserror = "1"
 tokio = { version = "0.2", features = ["rt-threaded", "macros"] }
-warp = "0.2"
+warp = "0.3"
 csv = "1.1"
 futures = "0.3"
 
