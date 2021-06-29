@@ -2,13 +2,10 @@
 //! <https://www.alphavantage.co/>
 //!
 
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-    prelude::*,
-};
-use crate::{Error, ErrorKind, Price, TradingPair};
+use crate::{config::HttpsConfig, prelude::*, Error, ErrorKind, Price, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use serde::{Deserialize, Serialize};
+
 /// Hostname for AlphaVantage API
 pub const API_HOST: &str = "www.alphavantage.co";
 
@@ -42,7 +39,7 @@ impl AlphavantageParams {
 impl AlphavantageSource {
     /// Create a new Alphavantage source provider
     pub fn new(apikey: impl Into<String>, config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self {
             https_client,
             apikey: apikey.into(),

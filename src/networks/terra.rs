@@ -13,5 +13,5 @@ use once_cell::sync::Lazy;
 pub const MEMO: &str = concat!("delphi/", env!("CARGO_PKG_VERSION"));
 
 /// StdTx schema as parsed from `schema.toml`
-static SCHEMA: Lazy<stdtx::Schema> =
+static SCHEMA: Lazy<stdtx::amino::Schema> =
     Lazy::new(|| include_str!("terra/schema.toml").parse().unwrap());

@@ -3,11 +3,8 @@
 //!
 //! Only KRW pairs are supported.
 
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-};
-use crate::{prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use crate::{config::HttpsConfig, prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use serde::{Deserialize, Serialize};
 
 /// Hostname for Bithumb API
@@ -21,7 +18,7 @@ pub struct BithumbSource {
 impl BithumbSource {
     /// Create a new Bithumb source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 
@@ -83,43 +80,31 @@ pub struct PricePoint {
 #[cfg(test)]
 mod tests {
     use super::BithumbSource;
-    use std::future::Future;
-
-    fn block_on<F: Future>(future: F) -> F::Output {
-        tokio::runtime::Builder::new()
-            .basic_scheduler()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(future)
-    }
 
     /// `trading_pairs()` test with known currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_ok() {
+    async fn trading_pairs_ok() {
         let pair = "LUNA/KRW".parse().unwrap();
-        let _price = block_on(
-            BithumbSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .unwrap();
+        let _price = BithumbSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .unwrap();
     }
 
     /// `trading_pairs()` with invalid currency pair
-    #[test]
+    #[tokio::test]
     #[ignore]
-    fn trading_pairs_404() {
+    async fn trading_pairs_404() {
         let pair = "N/A".parse().unwrap();
 
         // TODO(tarcieri): test 404 handling
-        let _err = block_on(
-            BithumbSource::new(&Default::default())
-                .unwrap()
-                .trading_pairs(&pair),
-        )
-        .err()
-        .unwrap();
+        let _err = BithumbSource::new(&Default::default())
+            .unwrap()
+            .trading_pairs(&pair)
+            .await
+            .err()
+            .unwrap();
     }
 }

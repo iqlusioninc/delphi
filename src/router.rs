@@ -29,7 +29,7 @@ pub struct Router {
 impl Router {
     /// Initialize the router from the config
     pub fn init() -> Result<Router, Error> {
-        let config = app_config();
+        let config = APP.config();
         let addr = (config.listen.addr.octets(), config.listen.port);
         let protocol = config.listen.protocol;
         let terra_oracle = terra::ExchangeRateOracle::new(&config)?;

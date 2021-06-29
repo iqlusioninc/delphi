@@ -8,7 +8,6 @@ pub mod commands;
 pub mod config;
 pub mod currency;
 pub mod error;
-pub mod https_client;
 pub mod networks;
 pub mod prelude;
 pub mod price;
@@ -24,3 +23,6 @@ pub use self::{
 };
 
 pub use std::collections::{btree_map as map, BTreeMap as Map};
+
+/// User-Agent to send in HTTP request
+pub const USER_AGENT: &str = concat!("iqlusion delphi/", env!("CARGO_PKG_VERSION"));

@@ -1,12 +1,8 @@
 //! Binance Source Provider
 //! <https://binance.com/>
 
-use crate::{
-    config::HttpsConfig,
-    https_client::{HttpsClient, Query},
-    prelude::*,
-    Currency, Error, ErrorKind, Price, TradingPair,
-};
+use crate::{config::HttpsConfig, prelude::*, Currency, Error, ErrorKind, Price, TradingPair};
+use iqhttp::{HttpsClient, Query};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -27,7 +23,7 @@ pub struct BinanceSource {
 impl BinanceSource {
     /// Create a new Binance source provider
     pub fn new(config: &HttpsConfig) -> Result<Self, Error> {
-        let https_client = HttpsClient::new(API_HOST, config)?;
+        let https_client = config.new_client(API_HOST)?;
         Ok(Self { https_client })
     }
 
