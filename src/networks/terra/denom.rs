@@ -150,10 +150,10 @@ impl Denom {
                     coinone_midpoint,
                 ) = try_join!(
                     sources
-                        .currencylayer
+                        .alphavantage
                         .trading_pairs(&TradingPair(Currency::Usd, Currency::Mnt)),
                     sources
-                        .currencylayer
+                        .alphavantage
                         .trading_pairs(&TradingPair(Currency::Krw, Currency::Mnt)),
                     sources
                         .binance
@@ -187,14 +187,14 @@ impl Denom {
             Denom::Usdr => {
                 let (imf_sdr_response, coinone_midpoint) = try_join!(
                     sources
-                        .imf_sdr
+                        .alphavantage
                         .trading_pairs(&TradingPair(Currency::Krw, Currency::Sdr)),
                     sources
                         .coinone
                         .trading_pairs(&TradingPair(Currency::Luna, Currency::Krw))
                 )?;
 
-                let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response.price);
+                let mut luna_sdr = Decimal::from(coinone_midpoint * imf_sdr_response);
                 luna_sdr.rescale(18);
                 Ok(luna_sdr.try_into().map_err(|_| ErrorKind::Parse)?)
             }
@@ -208,7 +208,7 @@ async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::De
     let pair_1 = TradingPair(Currency::Usd, cur);
 
     let (currencylayer_response_usd, binance_response) = try_join!(
-        sources.currencylayer.trading_pairs(&pair_1),
+        sources.alphavantage.trading_pairs(&pair_1),
         sources
             .binance
             .approx_price_for_pair(&TradingPair(Currency::Luna, Currency::Usd)),
