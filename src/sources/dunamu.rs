@@ -35,6 +35,8 @@ impl DunamuSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting Dunamu Trading Pair {}", pair);
+
         if pair.0 != Currency::Krw && pair.1 != Currency::Krw {
             fail!(ErrorKind::Currency, "trading pair must be with KRW");
         }
@@ -47,6 +49,8 @@ impl DunamuSource {
             .get_json("/v1/forex/recent", &query)
             .await?;
         let price: Decimal = api_response[0].base_price.to_string().parse()?;
+        info!("Got Dunamu Trading Pair {}", pair);
+
         Ok(Price::new(price)?)
     }
 }

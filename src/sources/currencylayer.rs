@@ -5,6 +5,7 @@
 use crate::{
     config::HttpsConfig,
     https_client::{HttpsClient, Query},
+    prelude::*,
 };
 use crate::{Error, Price, TradingPair};
 use rust_decimal::prelude::FromPrimitive;
@@ -50,6 +51,8 @@ impl CurrencylayerSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting CurrencyLayer Trading Pair {}", pair);
+
         let params = CurrencylayerParams {
             source: pair.0.to_string(),
             currencies: pair.1.to_string(),
@@ -66,6 +69,8 @@ impl CurrencylayerSource {
             .expect("expected currencylayer to return one value");
         let dec_price = Decimal::from_f64(*price)
             .expect("expected currencylayer response to convert to a decimal");
+        info!("Got CurrencyLayer Trading Pair {}", pair);
+
         Price::new(dec_price)
     }
 }

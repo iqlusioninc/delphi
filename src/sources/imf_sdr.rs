@@ -72,6 +72,8 @@ impl ImfSdrSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Response, Error> {
+        info!("Getting IMG SDR Trading Pair {}", pair);
+
         if pair.1 != Currency::Sdr {
             fail!(ErrorKind::Currency, "trading pair must be with IMF SDR");
         }
@@ -124,6 +126,7 @@ impl ImfSdrSource {
                 Err(_e) => continue,
             };
         }
+        info!("Got IMG SDR Trading Pair {}", pair);
 
         match response_row {
             Some(resp) => Response::try_from(resp)

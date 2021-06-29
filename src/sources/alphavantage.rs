@@ -51,6 +51,8 @@ impl AlphavantageSource {
 
     /// Get trading pairs
     pub async fn trading_pairs(&self, pair: &TradingPair) -> Result<Price, Error> {
+        info!("Getting Alpha Vantage Trading Pair {}", pair);
+
         let params = AlphavantageParams {
             function: "CURRENCY_EXCHANGE_RATE".to_owned(),
             from_currency: pair.0.to_string(),
@@ -60,7 +62,10 @@ impl AlphavantageSource {
 
         let query = params.to_request_uri();
         match self.https_client.get_json("/query", &query).await? {
-            Response::Success(resp) => Ok(resp.exchange_rate),
+            Response::Success(resp) => {
+                info!("Got Alpha Vantage Trading Pair {}", pair);
+                Ok(resp.exchange_rate)
+            }
             Response::Error(msg) => fail!(ErrorKind::Source, "Alpha Vantage error: {}", msg),
         }
     }
