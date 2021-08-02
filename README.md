@@ -88,7 +88,7 @@ limitations under the License.
 
 [//]: # (badges)
 
-[build-image]: https://github.com/iqlusioninc/delphi/workflows/Rust/badge.svg?branch=develop&event=push
+[build-image]: https://github.com/iqlusioninc/delphi/workflows/Rust/badge.svg?branch=main&event=push
 [build-link]: https://github.com/iqlusioninc/delphi/actions
 [safety-image]: https://img.shields.io/badge/unsafe-forbidden-success.svg
 [safety-link]: https://github.com/rust-secure-code/safety-dance/
@@ -106,7 +106,7 @@ limitations under the License.
 [currencylayer_api]: https://currencylayer.com/product
 [binance]: https://binance-docs.github.io/apidocs/spot/en/#change-log
 [cc]: https://contributor-covenant.org
-[CODE_OF_CONDUCT.md]: https://github.com/iqlusioninc/delphi/blob/develop/CODE_OF_CONDUCT.md
+[CODE_OF_CONDUCT.md]: https://github.com/iqlusioninc/delphi/blob/main/CODE_OF_CONDUCT.md
 [coinone]: https://doc.coinone.co.kr/
 [dunamu]: https://www.dunamu.com/
 [gdac]: https://docs.gdac.com/#introduction
@@ -115,5 +115,5 @@ limitations under the License.
 [iqlusion_stakeid]: https://terra.stake.id/?#/validator/EA2D131F0DE4A91CC7ECA70FAAEB7F088F5DC6C3
 [Terra]: https://terra.money/
 [terra_oracle]: https://docs.terra.money/validator/oracle.html
-[tmkms]: https://github.com/iqlusioninc/tmkms/blob/develop/README.txsigner.md
-[tmkms_batch]: https://github.com/iqlusioninc/tmkms/blob/develop/README.txsigner.md#architecture
+[tmkms]: https://github.com/iqlusioninc/tmkms/blob/main/README.txsigner.md
+[tmkms_batch]: https://github.com/iqlusioninc/tmkms/blob/main/README.txsigner.md#architecture
