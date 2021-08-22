@@ -28,7 +28,7 @@ pub struct ExchangeRateOracle(Arc<Mutex<OracleState>>);
 impl ExchangeRateOracle {
     /// Create a new [`ExchangeRateOracle`]
     pub fn new(config: &DelphiConfig) -> Result<Self, Error> {
-        let state = OracleState::new(&config)?;
+        let state = OracleState::new(config)?;
         Ok(ExchangeRateOracle(Arc::new(Mutex::new(state))))
     }
 
