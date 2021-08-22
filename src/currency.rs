@@ -68,9 +68,6 @@ pub enum Currency {
     /// Mongolian Tugrik
     Mnt,
 
-    /// Norwegian Krone
-    Nok,
-
     /// IMF Special Drawing Rights
     Sdr,
 
@@ -129,7 +126,6 @@ impl Display for Currency {
             Currency::Thb => "THB",
             Currency::Sek => "SEK",
             Currency::Dkk => "DKK",
-            Currency::Nok => "NOK",
             Currency::Twd => "TWD",
         })
     }
@@ -165,7 +161,6 @@ impl FromStr for Currency {
             "THB" => Currency::Thb,
             "SEK" => Currency::Sek,
             "DKK" => Currency::Dkk,
-            "NOK" => Currency::Nok,
             "TWD" => Currency::Twd,
             other => Currency::Other(other.to_owned()),
         })
@@ -192,7 +187,6 @@ impl From<Denom> for Currency {
             Denom::Uthb => Currency::Thb,
             Denom::Usek => Currency::Sek,
             Denom::Udkk => Currency::Dkk,
-            Denom::Unok => Currency::Nok,
             Denom::Utwd => Currency::Twd,
         }
     }
@@ -244,7 +238,6 @@ impl Currency {
             Currency::Thb => "N/A".to_string(),
             Currency::Sek => "N/A".to_string(),
             Currency::Dkk => "N/A".to_string(),
-            Currency::Nok => "N/A".to_string(),
             Currency::Twd => "N/A".to_string(),
         }
     }
