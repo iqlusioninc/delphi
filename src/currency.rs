@@ -89,9 +89,6 @@ pub enum Currency {
     /// Swedish Krona
     Sek,
 
-    ///Taiwan Dollar
-    Twd,
-
     /// Other (open-ended)
     Other(String),
 }
@@ -115,7 +112,7 @@ impl Display for Currency {
             Currency::Usdc => "USDC",
             Currency::Usdt => "USDT",
             Currency::Other(other) => other.as_ref(),
-            Currency::Sdr => "SDR",
+            Currency::Sdr => "XDR",
             Currency::Mnt => "MNT",
             Currency::Cny => "CNY",
             Currency::Jpy => "JPY",
@@ -126,7 +123,6 @@ impl Display for Currency {
             Currency::Thb => "THB",
             Currency::Sek => "SEK",
             Currency::Dkk => "DKK",
-            Currency::Twd => "TWD",
         })
     }
 }
@@ -149,7 +145,7 @@ impl FromStr for Currency {
             "USD" => Currency::Usd,
             "USDC" => Currency::Usdc,
             "USDT" => Currency::Usdt,
-            "SDR" => Currency::Sdr,
+            "XDR" => Currency::Sdr,
             "CNY" => Currency::Cny,
             "JPY" => Currency::Jpy,
             "INR" => Currency::Inr,
@@ -161,7 +157,6 @@ impl FromStr for Currency {
             "THB" => Currency::Thb,
             "SEK" => Currency::Sek,
             "DKK" => Currency::Dkk,
-            "TWD" => Currency::Twd,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -187,7 +182,6 @@ impl From<Denom> for Currency {
             Denom::Uthb => Currency::Thb,
             Denom::Usek => Currency::Sek,
             Denom::Udkk => Currency::Dkk,
-            Denom::Utwd => Currency::Twd,
         }
     }
 }
@@ -214,7 +208,7 @@ impl Currency {
             Currency::Krw => "Korean won".to_string(),
             Currency::Usd => "U.S. dollar".to_string(),
             Currency::Luna => "N/A".to_string(),
-            Currency::Sdr => "SDR".to_string(),
+            Currency::Sdr => "XDR".to_string(),
             Currency::Other(other) => other.to_string(),
             Currency::Atom => "N/A".to_string(),
             Currency::Bnb => "N/A".to_string(),
@@ -238,7 +232,6 @@ impl Currency {
             Currency::Thb => "N/A".to_string(),
             Currency::Sek => "N/A".to_string(),
             Currency::Dkk => "N/A".to_string(),
-            Currency::Twd => "N/A".to_string(),
         }
     }
 }

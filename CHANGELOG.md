@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#188]: https://github.com/iqlusioninc/delphi/pull/188
 
 ## 0.0.2 (2021-06-26)
+### Removed
+- utwd until launch on Terra
 
 ## 0.0.1 (2021-06-24)
 - Initial release
