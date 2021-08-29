@@ -88,7 +88,7 @@ limitations under the License.
 
 [//]: # (badges)
 
-[build-image]: https://github.com/iqlusioninc/delphi/workflows/Rust/badge.svg?branch=main&event=push
+[build-image]: https://github.com/iqlusioninc/delphi/actions/workflows/delphi.yml/badge.svg?branch=main&event=push
 [build-link]: https://github.com/iqlusioninc/delphi/actions
 [safety-image]: https://img.shields.io/badge/unsafe-forbidden-success.svg
 [safety-link]: https://github.com/rust-secure-code/safety-dance/
