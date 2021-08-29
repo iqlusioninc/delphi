@@ -2,7 +2,7 @@
 
 use crate::networks::terra::Denom;
 use serde::{Deserialize, Serialize};
-use stdtx::amino_types::{Coin, StdFee};
+use stdtx::amino::types::{Coin, StdFee};
 
 /// Network/chain specific configuration
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
