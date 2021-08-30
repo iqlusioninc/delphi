@@ -31,7 +31,7 @@ serde_json = "1"
 sha2 = "0.9"
 stdtx = "0.5"
 tendermint = "0.20"
-tendermint-rpc = "0.20"
+tendermint-rpc = "0.21"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
 warp = "0.3"
