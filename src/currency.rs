@@ -89,6 +89,12 @@ pub enum Currency {
     /// Swedish Krona
     Sek,
 
+    ///Indonesian rupiah
+    Idr,
+
+    ///Philippine peso
+    Php,
+
     /// Other (open-ended)
     Other(String),
 }
@@ -123,6 +129,8 @@ impl Display for Currency {
             Currency::Thb => "THB",
             Currency::Sek => "SEK",
             Currency::Dkk => "DKK",
+            Currency::Idr => "IDR",
+            Currency::Php => "PHP",
         })
     }
 }
@@ -157,6 +165,8 @@ impl FromStr for Currency {
             "THB" => Currency::Thb,
             "SEK" => Currency::Sek,
             "DKK" => Currency::Dkk,
+            "IDR" => Currency::Idr,
+            "PHP" => Currency::Php,
             other => Currency::Other(other.to_owned()),
         })
     }
@@ -182,6 +192,8 @@ impl From<Denom> for Currency {
             Denom::Uthb => Currency::Thb,
             Denom::Usek => Currency::Sek,
             Denom::Udkk => Currency::Dkk,
+            Denom::Uidr => Currency::Idr,
+            Denom::Uphp => Currency::Php,
         }
     }
 }
@@ -232,6 +244,8 @@ impl Currency {
             Currency::Thb => "N/A".to_string(),
             Currency::Sek => "N/A".to_string(),
             Currency::Dkk => "N/A".to_string(),
+            Currency::Idr => "N/A".to_string(),
+            Currency::Php => "N/A".to_string(),
         }
     }
 }
