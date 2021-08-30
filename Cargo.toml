@@ -1,6 +1,6 @@
 [package]
 name        = "delphi"
-version     = "0.0.4"
+version     = "0.0.5"
 description = "Oracle feeder service (presently supporting Terra)"
 authors     = [
     "Tony Arcieri <tony@iqlusion.io>",
