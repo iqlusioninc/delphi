@@ -2,6 +2,7 @@
 //!
 //! Protobuf definitions:
 //! <https://github.com/terra-money/core/blob/main/proto/terra/oracle/v1beta1/oracle.proto>
+//! <https://github.com/terra-money/core/blob/main/proto/terra/oracle/v1beta1/tx.proto>
 
 use cosmrs::tx::MsgProto;
 use prost::Message;
@@ -57,4 +58,52 @@ pub struct ExchangeRateTuple {
     /// Exchange rate
     #[prost(string, tag = "2")]
     pub exchange_rate: String,
+}
+
+/// MsgAggregateExchangeRatePrevote - struct for message to submit aggregate exchange rate prevote.
+#[derive(Clone, PartialEq, Message)]
+pub struct MsgAggregateExchangeRatePrevote {
+    /// Hash
+    #[prost(string, tag = "1")]
+    pub hash: String,
+
+    /// Feeder
+    #[prost(string, tag = "2")]
+    pub feeder: String,
+
+    /// Validator
+    #[prost(string, tag = "3")]
+    pub validator: String,
+}
+
+/// MsgAggregateExchangeRateVote - struct for message to submit aggregate exhcnage rate vote.
+#[derive(Clone, PartialEq, Message)]
+pub struct MsgAggregateExchangeRateVote {
+    /// Salt
+    #[prost(string, tag = "1")]
+    pub salt: String,
+
+    /// Exchange Rates
+    #[prost(string, tag = "2")]
+    pub exchange_rates: String,
+
+    /// Feeder
+    #[prost(string, tag = "3")]
+    pub feeder: String,
+
+    /// Validator
+    #[prost(string, tag = "4")]
+    pub validator: String,
+}
+
+/// MsgDelegateFeedConsent - struct for message to delegate oracle voting
+#[derive(Clone, PartialEq, Message)]
+pub struct MsgDelegateFeedConsent {
+    /// Operator
+    #[prost(string, tag = "1")]
+    pub operator: String,
+
+    /// Delegate
+    #[prost(string, tag = "2")]
+    pub delegate: String,
 }
