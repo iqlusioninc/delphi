@@ -1,10 +1,6 @@
 //! Terra exchange rate oracle
 
-use super::{
-    denom::Denom,
-    msg::{self, MsgAggregateExchangeRateVote},
-    MEMO, SCHEMA,
-};
+use super::{denom::Denom, proto, MEMO, SCHEMA};
 use crate::{config::DelphiConfig, prelude::*, router::Request, sources::Sources, Error};
 use futures::future::join_all;
 use serde_json::json;
@@ -79,7 +75,8 @@ impl ExchangeRateOracle {
     ) -> Vec<stdtx::amino::Msg> {
         let started_at = Instant::now();
         let mut state = self.0.lock().await;
-        let mut exchange_rates = msg::ExchangeRates::new();
+        let mut exchange_rate_tuples: Vec<proto::ExchangeRateTuple> = Vec::new();
+        //let mut exchange_rate_tuples = vec![];
         let mut exchange_rate_fut = vec![];
 
         for denom in Denom::kinds() {
@@ -96,7 +93,10 @@ impl ExchangeRateOracle {
 
         for (rate, denom) in rates.iter().zip(Denom::kinds()) {
             match rate {
-                Ok(rate) => exchange_rates.add(*denom, *rate).expect("duplicate denom"),
+                Ok(rate) => exchange_rate_tuples.push(proto::ExchangeRateTuple {
+                    denom: denom.to_string(),
+                    exchange_rate: rate.to_string(),
+                }),
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
                     continue;
@@ -105,12 +105,8 @@ impl ExchangeRateOracle {
         }
 
         info!(
-            "voting {} ({:?})",
-            exchange_rates
-                .iter()
-                .map(|(denom, decimal)| format!("{}={}", denom, decimal))
-                .collect::<Vec<_>>()
-                .join(", "),
+            "voting {:?} ({:?})",
+            exchange_rate_tuples,
             Instant::now().duration_since(started_at)
         );
 
@@ -131,19 +127,14 @@ impl ExchangeRateOracle {
             }
         }
 
-        let vote_msg = MsgAggregateExchangeRateVote {
-            exchange_rates,
-            salt: MsgAggregateExchangeRateVote::random_salt(),
+        let prevote_msg = proto::MsgAggregateExchangeRatePrevote {
+            exchange_rate_tuples,
+            salt: proto::AggregateExchangeRateVote::random_salt(),
             feeder: state.feeder,
             validator: state.validator,
         };
 
-        let prevote_msg_stdtx = vote_msg
-            .prevote()
-            .to_stdtx_msg()
-            .expect("can't serialize vote as stdtx");
-
-        msgs.push(prevote_msg_stdtx);
+        msgs.push(prevote_msg);
 
         let vote_msg_stdtx = vote_msg
             .to_stdtx_msg()

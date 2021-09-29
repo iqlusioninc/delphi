@@ -2,7 +2,6 @@
 //! <https://terra.money/>
 
 pub mod denom;
-pub mod msg;
 pub mod oracle;
 pub mod protos;
 
