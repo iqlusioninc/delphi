@@ -4,7 +4,7 @@
 pub mod denom;
 pub mod msg;
 pub mod oracle;
-pub mod proto;
+pub mod protos;
 
 pub use self::{denom::Denom, oracle::ExchangeRateOracle};
 
