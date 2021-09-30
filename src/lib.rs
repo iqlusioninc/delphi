@@ -11,6 +11,7 @@ pub mod error;
 pub mod networks;
 pub mod prelude;
 pub mod price;
+pub mod protos;
 pub mod router;
 pub mod sources;
 pub mod trading_pair;
