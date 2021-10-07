@@ -315,9 +315,9 @@ dependencies = [
 
 [[package]]
 name = "cosmrs"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfe09c1bd2a2caca692d37fc7f728d38b77c03ac15c83e018857e1e36deca416"
+checksum = "0f3e08699be80cce88bcfd87a3c87628a7b4cd5a52362816ba9f3712fedbf34c"
 dependencies = [
  "bip32",
  "cosmos-sdk-proto",
@@ -328,6 +328,8 @@ dependencies = [
  "prost",
  "prost-types",
  "rand_core 0.6.3",
+ "serde",
+ "serde_json",
  "subtle-encoding",
  "tendermint",
  "thiserror",
