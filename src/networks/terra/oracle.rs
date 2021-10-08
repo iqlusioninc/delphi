@@ -1,6 +1,6 @@
 //! Terra exchange rate oracle
 
-use super::{denom::Denom, proto, MEMO, SCHEMA};
+use super::{denom::Denom, msg, protos, MEMO, SCHEMA};
 use crate::{config::DelphiConfig, prelude::*, router::Request, sources::Sources, Error};
 use futures::future::join_all;
 use serde_json::json;
@@ -13,7 +13,7 @@ use stdtx::address::Address;
 use stdtx::amino::types::StdFee;
 use tendermint_rpc::endpoint::broadcast::tx_commit;
 use tokio::{sync::Mutex, time::timeout};
-use warp::http::StatusCode;
+use warp::{http::StatusCode, reply::Response};
 
 /// Number of seconds to wait for an oracle vote complete
 pub const DEFAULT_TIMEOUT_SECS: u64 = 10;
@@ -38,12 +38,23 @@ impl ExchangeRateOracle {
         let response = if msgs.is_empty() {
             json!({"status": "ok"})
         } else {
-            let msg_json = msgs
+            /*            let msg_json = msgs
                 .iter()
                 .map(|msg| msg.to_json_value(&SCHEMA))
-                .collect::<Vec<_>>();
+                .collect::<Vec<_>>();*/
 
-            let tx = json!({
+            let tx_signing_request = protos::TxSigningRequest {
+                chain_id: Some(chain_id),
+                msg: msgs.into_iter().map(Into::into).collect(),
+            };
+
+            let mut bytes = Vec::new();
+            let body = prost::Message::encode(&tx_signing_request, &mut bytes)?;
+            Response::builder().status(StatusCode::OK).body(body).unwrap()
+        };
+
+
+/*            let tx = json!({
                 "chain_id": chain_id,
                 "fee": self.oracle_fee().await,
                 "memo": MEMO,
@@ -54,7 +65,9 @@ impl ExchangeRateOracle {
                 "status": "ok",
                 "tx": tx
             })
-        };
+        };*/
+
+
 
         Ok(warp::reply::with_status(
             warp::reply::json(&response),
@@ -72,11 +85,10 @@ impl ExchangeRateOracle {
     async fn get_vote_msgs(
         &self,
         last_tx_response: Option<tx_commit::Response>,
-    ) -> Vec<stdtx::amino::Msg> {
+    ) -> Vec<cosmrs::tx::Msg> {
         let started_at = Instant::now();
         let mut state = self.0.lock().await;
-        let mut exchange_rate_tuples: Vec<proto::ExchangeRateTuple> = Vec::new();
-        //let mut exchange_rate_tuples = vec![];
+        let mut exchange_rates = msg::ExchangeRates::new();
         let mut exchange_rate_fut = vec![];
 
         for denom in Denom::kinds() {
@@ -93,10 +105,7 @@ impl ExchangeRateOracle {
 
         for (rate, denom) in rates.iter().zip(Denom::kinds()) {
             match rate {
-                Ok(rate) => exchange_rate_tuples.push(proto::ExchangeRateTuple {
-                    denom: denom.to_string(),
-                    exchange_rate: rate.to_string(),
-                }),
+                Ok(rate) => exchange_rates.add(*denom, *rate).expect("duplicate denom"),
                 Err(err) => {
                     error!("error getting exchange rate for {}: {}", denom, err);
                     continue;
@@ -106,7 +115,11 @@ impl ExchangeRateOracle {
 
         info!(
             "voting {:?} ({:?})",
-            exchange_rate_tuples,
+            exchange_rates
+                .iter()
+                .map(|(denom, decimal)| format!("{}={}", denom, decimal))
+                .collect::<Vec<_>>()
+                .join(", "),
             Instant::now().duration_since(started_at)
         );
 
@@ -127,14 +140,19 @@ impl ExchangeRateOracle {
             }
         }
 
-        let prevote_msg = proto::MsgAggregateExchangeRatePrevote {
-            exchange_rate_tuples,
-            salt: proto::AggregateExchangeRateVote::random_salt(),
+        let vote_msg = protos::MsgAggregateExchangeRateVote {
+            exchange_rates: exchange_rates.to_string(),
+            salt: protos::MsgAggregateExchangeRateVote::random_salt(),
             feeder: state.feeder,
             validator: state.validator,
         };
 
-        msgs.push(prevote_msg);
+        let prevote_msg_stdtx = vote_msg
+            .prevote()
+            .to_stdtx_msg()
+            .expect("can't serialize vote as stdtx");
+
+        msgs.push(prevote_msg_stdtx);
 
         let vote_msg_stdtx = vote_msg
             .to_stdtx_msg()

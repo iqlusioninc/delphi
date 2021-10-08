@@ -129,7 +129,7 @@ impl Denom {
     }
 
     /// Get the exchange rate for this [`Denom`]
-    pub async fn get_exchange_rate(self, sources: &Sources) -> Result<stdtx::Decimal, Error> {
+    pub async fn get_exchange_rate(self, sources: &Sources) -> Result<Decimal, Error> {
         match self {
             Denom::Ukrw => {
                 let bithumb_response = sources
@@ -140,7 +140,7 @@ impl Denom {
                 let mut luna_krw: Decimal = bithumb_response.into();
 
                 luna_krw.rescale(18);
-                Ok(luna_krw.try_into().map_err(|_| ErrorKind::Parse)?)
+                Ok(luna_krw)
             }
 
             Denom::Umnt => {
@@ -205,7 +205,7 @@ impl Denom {
     }
 }
 
-async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::Decimal, Error> {
+async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<Decimal, Error> {
     let pair_1 = TradingPair(Currency::Usd, cur);
 
     let (currencylayer_response_usd, binance_response) = try_join!(
@@ -218,7 +218,7 @@ async fn luna_rate_via_usd(sources: &Sources, cur: Currency) -> Result<stdtx::De
     let mut luna_cur = Decimal::from(binance_response * currencylayer_response_usd);
 
     luna_cur.rescale(18);
-    Ok(luna_cur.try_into().map_err(|_| ErrorKind::Parse)?)
+    Ok(luna_cur)
 }
 
 impl Display for Denom {

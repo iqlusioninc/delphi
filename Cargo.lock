@@ -461,6 +461,7 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "prost",
+ "prost-types",
  "rand 0.8.4",
  "rust_decimal",
  "serde",
